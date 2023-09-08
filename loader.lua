@@ -1,5 +1,5 @@
 local http_request = game:HttpGet('https://pastebin.com/raw/ymTEAzmy1')
-local scriptKeys = game:GetService('HttpService'):JSONDecode(http_request).validScriptKeys
+local scriptKeys = game:GetService('HttpService'):JSONDecode(http_request)
 local ClientHWID = nil
 local HasKey = nil
 
@@ -16,7 +16,7 @@ end
 ClientHWID = CheckExecutor({Valyse = true}) and gethwid() or game:GetService('RbxAnalyticsService'):GetClientId()
 setclipboard(ClientHWID)
 
-for k,v in pairs(scriptKeys) do
+for k,v in pairs(scriptKeys.validScriptKeys) do
 	if table.find(v, ClientHWID) and script_Key == k then
 		HasKey = true
 		break
@@ -29,7 +29,7 @@ for k,v in pairs(scriptKeys) do
 			Headers = {
 				['Content-Type'] = 'application/json'
 			},
-			Body = game:GetService('HttpService'):JSONEncode(scriptKeys[script_Key].WhitelistedTo == tostring(ClientHWID))
+			Body = game:GetService('HttpService'):JSONEncode(scriptKeys.validScriptKeys[script_Key].WhitelistedTo == tostring(ClientHWID))
 		})
 		HasKey = true
 		break
@@ -42,3 +42,5 @@ if HasKey then
 else
 	warn("fake key or tried to do something")
 end
+
+--pcall(function() local a='https://roblox.com';getgenv().scriptKey="";getgenv().;loadstring(game:HttpGet(a))(end);
