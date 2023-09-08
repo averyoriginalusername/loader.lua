@@ -1,5 +1,4 @@
-
-local http_request = request({Url = 'https://pastebin.com/raw/ymTEAzmy1', Method = 'GET'})
+local http_request = game:HttpGet('https://pastebin.com/raw/ymTEAzmy1')
 local scriptKeys = game:GetService('HttpService'):JSONDecode(http_request).validScriptKeys
 local ClientHWID = nil
 local HasKey = nil
