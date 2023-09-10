@@ -164,7 +164,7 @@ local IllusionistNotifier = SecurityTab:CreateToggle({
         end
     end,
 })
-Rayfield.Keybind:Set("RightCtrl") -- Keybind (string) -- Use To Update Keybind
+Keybind:Set("RightCtrl") -- Keybind (string) -- Use To Update Keybind
 --[[
 local Label = Tab:CreateLabel("Label Example")
 
