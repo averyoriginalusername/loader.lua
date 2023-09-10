@@ -77,6 +77,7 @@ local BreakJoints = ClientTab:CreateButton({
 local GameVisuals = Window:CreateTab("Game Visuals", 4483362458) -- Title, Image
 local ClientSection = GameVisuals:CreateSection("Visuals Cheats")
 
+local healthOnCharacterAdded = nil
 local ViewHealthBarsToggle = GameVisuals:CreateToggle({
 	Name = "View Health Bars",
 	CurrentValue = false,
@@ -93,8 +94,17 @@ local ViewHealthBarsToggle = GameVisuals:CreateToggle({
                 end
             end
         end
-
+        
         ToggleHealthView(Toggle)
+        healthOnCharacterAdded = workspace.Live.CharacterAdded:Connect(function()
+            ToggleHealthView(Toggle)
+        end)
+
+        if Toggle == false then
+            if healthOnCharacterAdded then
+                healthOnCharacterAdded:Disconnect()
+            end
+        end
 	end,
 })
 local ViewHealthDistance = GameVisuals:CreateSlider({
@@ -155,6 +165,7 @@ local IllusionistNotifier = SecurityTab:CreateToggle({
         end
     end,
 })
+Rayfield:Keybind:Set("RightCtrl") -- Keybind (string) -- Use To Update Keybind
 --[[
 local Label = Tab:CreateLabel("Label Example")
 
