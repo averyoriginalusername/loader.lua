@@ -11,10 +11,11 @@ do
 			return false
 		end
 	end
+	print(request({Url = "https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua", Method = "GET"}))
 	ClientHWID = CheckExecutor({Valyse = true}) and gethwid() or game:GetService('RbxAnalyticsService'):GetClientId()
 	for i: number, scriptLink in next, GameList do
 		if i == game.PlaceId then
-			return scriptLink()
+			return queue_on_teleport(scriptLink())
 		end
 	end
 end
