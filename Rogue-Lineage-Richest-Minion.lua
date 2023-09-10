@@ -1,6 +1,6 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
-	Name = "multi ware or something",
+	Name = "multiware test",
 	LoadingTitle = "Loading: Rogue Lineage: Richest Minion...",
 	LoadingSubtitle = "by ???",
 	ConfigurationSaving = {
@@ -9,49 +9,51 @@ local Window = Rayfield:CreateWindow({
 		FileName = "mwRLRMConfig"
 	},
 })
-Rayfield:Notify("Loaded:", "Rogue Lineage: Richest Minion", 4483362458) -- Notfication -- Title, Content, Image
 
 local ClientCheatSettings = {
-    ["JumpPower"] = 10;
+    ["JumpPower"] = 0;
+    ["HealthDistance"] = 0;
 }
 local Player = game.Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
 local ClientTab = Window:CreateTab("Client Modification", 4483362458) -- Title, Image
-local ClientSection = Tab:CreateSection("Cheats")
+local ClientSection = ClientTab:CreateSection("Client Cheats")
 
-local Toggle = Tab:CreateToggle({
+local InfJumpConnection = nil
+local InfJumpToggle = ClientTab:CreateToggle({
 	Name = "Infinite Jump",
 	CurrentValue = false,
 	Flag = "InfJumpToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
         local UserInputService = game:GetService("UserInputService")
-        local GenerateNew = game:GetService("HttpService"):GenerateGUID(false)
-        local InfJumpConnection = nil
 
         if Toggle == true then
             InfJumpConnection = game:GetService("RunService").RenderStepped:Connect(function()
                 local NewBV 
                 while UserInputService:IsKeyDown("Space") do wait()
-                    if not HumanoidRootPart:FindFirstChild(GenerateNew) then
+                    if not HumanoidRootPart:FindFirstChild("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") then
                         NewBV = Instance.new("BodyVelocity")
-                        NewBV.Name = GenerateNew
+                        NewBV.Name = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                         NewBV.MaxForce = Vector3.new(0, math.huge, 0)
-                        NewBV.Velocity = Vector3.new(0, JumpPower, 0)
+                        NewBV.Velocity = Vector3.new(0, ClientCheatSettings.JumpPower, 0)
                         NewBV.Parent = HumanoidRootPart
                     end
                 end
-                if NewBV then NewBV:Destroy() end
+                if NewBV then
+                     NewBV:Destroy()
+                end
             end)
-        else
-            if InfJumpConnection then InfJumpConnection:Disconnect end
+        elseif Toggle == false then
+            if InfJumpConnection then
+                 InfJumpConnection:Disconnect()
+                 print("Disconnected")
+             end
         end 
 	end,
 })
-
-
-local Slider = Tab:CreateSlider({
+local InfJumpSlider = ClientTab:CreateSlider({
 	Name = "Infinite Jump Power",
 	Range = {0, 150},
 	Increment = 1,
@@ -63,6 +65,97 @@ local Slider = Tab:CreateSlider({
 	end,
 })
 
+
+local BlankSection1 = ClientTab:CreateSection("")
+local BreakJoints = ClientTab:CreateButton({
+	Name = "Break Joints (Reset)",
+	Callback = function()
+        if Player:FindFirstChild("Danger") then return end
+		Character:BreakJoints()
+	end,
+})
+local GameVisuals = Window:CreateTab("Game Visuals", 4483362458) -- Title, Image
+local ClientSection = GameVisuals:CreateSection("Visuals Cheats")
+
+local ViewHealthBarsToggle = GameVisuals:CreateToggle({
+	Name = "View Health Bars",
+	CurrentValue = false,
+	Flag = "HealthbarToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Toggle)
+        local ToggleHealthView = function(val)
+            for i,v in pairs(workspace.Live:GetDescendants()) do
+                if v:IsA("Model") == true then
+                    local TargetHumanoid = v:FindFirstChild("Humanoid")
+                    if TargetHumanoid then
+                    	TargetHumanoid.HealthDisplayDistance = ClientCheatSettings.HealthDistance
+                        TargetHumanoid.HealthDisplayType = val and Enum.HumanoidHealthDisplayType.AlwaysOn or Enum.HumanoidHealthDisplayType.AlwaysOff
+                    end
+                end
+            end
+        end
+
+        ToggleHealthView(Toggle)
+	end,
+})
+local ViewHealthDistance = GameVisuals:CreateSlider({
+	Name = "Health Distance Threshold",
+	Range = {0, 150},
+	Increment = 1,
+	Suffix = "Studs",
+	CurrentValue = ClientCheatSettings.JumpPower,
+	Flag = "ViewHealthDistanceSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(SliderValue)
+        ClientCheatSettings.HealthDistance = SliderValue
+	end,
+})
+
+local SecurityTab = Window:CreateTab("Security", 4483362458) -- Title, Image
+local NotifierSection = SecurityTab:CreateSection("Notifiers")
+
+
+local onPlayerAdded = nil
+local IllusionistNotifier = SecurityTab:CreateToggle({
+	Name = "Illusionist Notifier",
+	CurrentValue = false,
+	Flag = "IllusionistNotifier", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Toggle)
+        local NotifyIllu = function(TargetPlayer)
+            local TargetBackpack = TargetPlayer.Backpack
+            local TargetCharacter = TargetPlayer.Character or TargetPlayer.CharacterAdded:Wait()
+
+            if TargetBackpack:FindFirstChild("Observe") or TargetCharacter:FindFirstChild("Observe") then
+                print("e")
+                Rayfield:Notify({
+                    Title = TargetPlayer.Name.." has Observe!",
+                    Content = TargetPlayer.Name.." is an illusionist.",
+                    Duration = 1e9,
+                    Image = 4483362458,
+                    Actions = { -- Notification Buttons
+                        Ignore = {
+                          Name = "Alright"
+                        },
+                    },
+                 })
+            end
+        end
+        
+        if Toggle == true then
+            for i,rplayer in next, game.Players:GetChildren() do
+                print(rplayer)
+                NotifyIllu(rplayer)
+            end
+            onPlayerAdded = game.Players.PlayerAdded:Connect(function(Player)
+                NotifyIllu(Player)
+            end)
+        elseif Toggle == false then
+            if onPlayerAdded then 
+                onPlayerAdded:Disconnect()
+                print"disconnected"
+            end
+        end
+    end,
+})
+--[[
 local Label = Tab:CreateLabel("Label Example")
 
 local Paragraph = Tab:CreateParagraph({Title = "Paragraph Example", Content = "Paragraph Example"})
@@ -94,7 +187,7 @@ local Button = Tab:CreateButton({
 		Rayfield:Destroy()
 	end,
 })
-
+--]]
 -- Extras
 
 -- getgenv().SecureMode = true -- Only Set To True If Games Are Detecting/Crashing The UI
