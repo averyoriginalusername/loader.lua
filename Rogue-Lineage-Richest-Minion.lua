@@ -1,6 +1,8 @@
+if game.PlaceId ~= 13747403394 then return end
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
-	Name = "multiware test",
+	Name = "Multiware: Richest Minion",
 	LoadingTitle = "Loading: Rogue Lineage: Richest Minion...",
 	LoadingSubtitle = "by ???",
 	ConfigurationSaving = {
@@ -78,10 +80,10 @@ local GameVisuals = Window:CreateTab("Game Visuals", 4483362458) -- Title, Image
 local ClientSection = GameVisuals:CreateSection("Visuals Cheats")
 
 local healthOnCharacterAdded = nil
-local ViewHealthBarsToggle = GameVisuals:CreateToggle({
-	Name = "View Health Bars",
+local EyesOfElemira = GameVisuals:CreateToggle({
+	Name = "Eyes Of Elemira",
 	CurrentValue = false,
-	Flag = "HealthbarToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Flag = "EOEToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
         local ToggleHealthView = function(val)
             for i,v in pairs(workspace.Live:GetDescendants()) do
@@ -96,7 +98,7 @@ local ViewHealthBarsToggle = GameVisuals:CreateToggle({
         end
         
         ToggleHealthView(Toggle)
-        healthOnCharacterAdded = workspace.Live.CharacterAdded:Connect(function()
+        healthOnCharacterAdded = workspace.Live.ChildAdded:Connect(function()
             ToggleHealthView(Toggle)
         end)
 
@@ -107,8 +109,9 @@ local ViewHealthBarsToggle = GameVisuals:CreateToggle({
         end
 	end,
 })
+
 local ViewHealthDistance = GameVisuals:CreateSlider({
-	Name = "Health Distance Threshold",
+	Name = "View Health Threshold",
 	Range = {0, 150},
 	Increment = 1,
 	Suffix = "Studs",
@@ -164,7 +167,6 @@ local IllusionistNotifier = SecurityTab:CreateToggle({
         end
     end,
 })
-Keybind:Set("RightCtrl") -- Keybind (string) -- Use To Update Keybind
 --[[
 local Label = Tab:CreateLabel("Label Example")
 
