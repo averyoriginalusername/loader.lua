@@ -130,11 +130,10 @@ local IllusionistNotifier = SecurityTab:CreateToggle({
 	Flag = "IllusionistNotifier", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
         local NotifyIllu = function(TargetPlayer)
-            local TargetBackpack = TargetPlayer.Backpack
+            local TargetBackpack = TargetPlayer:WaitForChild("Backpack")
             local TargetCharacter = TargetPlayer.Character or TargetPlayer.CharacterAdded:Wait()
 
             if TargetBackpack:FindFirstChild("Observe") or TargetCharacter:FindFirstChild("Observe") then
-                print("e")
                 Rayfield:Notify({
                     Title = TargetPlayer.Name.." has Observe!",
                     Content = TargetPlayer.Name.." is an illusionist.",
@@ -165,7 +164,7 @@ local IllusionistNotifier = SecurityTab:CreateToggle({
         end
     end,
 })
-Rayfield:Keybind:Set("RightCtrl") -- Keybind (string) -- Use To Update Keybind
+Rayfield.Keybind:Set("RightCtrl") -- Keybind (string) -- Use To Update Keybind
 --[[
 local Label = Tab:CreateLabel("Label Example")
 
