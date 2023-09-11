@@ -228,16 +228,17 @@ local SpecNotifierToggle = SecurityTab:CreateToggle({
             local TargetBackpack = TargetPlayer:WaitForChild("Backpack")
             local TargetCharacter = TargetPlayer.Character or TargetPlayer.CharacterAdded:Wait()
 
-            if TargetBackpack:FindFirstChildOfClass("Tool"):FindFirstChild("SpecialSkill") then
-                local specTable = {}
+            local specTable = {}
 
-                for i,v in pairs(TargetBackpack:GetChildren()) do
-                    if v:IsA("Tool") == true then
-                        if v:FindFirstChild("SpecialSkill") then
-                            table.insert(specTable, v.Name)
-                        end
+            for i,v in pairs(TargetBackpack:GetChildren()) do
+                  if v:IsA("Tool") == true then
+                     if v:FindFirstChild("SpecialSkill") then
+                         table.insert(specTable, v.Name)
                     end
-                end
+               end
+            end
+            
+            if #specTable > 0 then
                 Rayfield:Notify({
                     Title = TargetPlayer.Name.." has specs!",
                     Content =  TargetPlayer.Name.."has: "..table.concat(specTable, ", "),
@@ -245,12 +246,11 @@ local SpecNotifierToggle = SecurityTab:CreateToggle({
                     Image = 4483362458,
                     Actions = { -- Notification Buttons
                         Ignore = {
-                          Name = "Alright"
+                            Name = "Alright"
                         },
                     },
-                 })
-                 specTable = {}
-                 return
+                })
+                specTable = {}
             end
         end
         
