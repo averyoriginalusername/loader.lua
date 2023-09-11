@@ -15,7 +15,7 @@ do
 	ClientHWID = CheckExecutor({Valyse = true}) and gethwid() or game:GetService('RbxAnalyticsService'):GetClientId()
 	for i: number, scriptLink in next, GameList do
 		if i == game.PlaceId then
-			return queue_on_teleport(scriptLink())
+			return scriptLink()
 		end
 	end
 end
