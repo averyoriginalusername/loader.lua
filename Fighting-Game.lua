@@ -2,7 +2,6 @@ local Player = game.Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local PlayerBackpack = Player:WaitForChild("Backpack")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-local CharacterRemotes = Character:WaitForChild("CharacterHandler"):WaitForChild("Remotes")
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
