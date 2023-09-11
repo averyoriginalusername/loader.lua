@@ -2,7 +2,7 @@ local Player = game.Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local PlayerBackpack = Player:WaitForChild("Backpack")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-local CharacterRemotes = Character:FindFirstChild("CharacterHandler"):FindFirstChild("Remotes")
+local CharacterRemotes = Character:WaitForChild("CharacterHandler"):WaitForChild("Remotes")
 local GetRemote = game.ReplicatedStorage.Requests:WaitForChild("Get")
 
 local ClientCheatSettings = {
@@ -24,6 +24,22 @@ local Window = Rayfield:CreateWindow({
 
 local ClientTab = Window:CreateTab("Client Modification", 4483362458) -- Title, Image
 local ClientSection = ClientTab:CreateSection("Client Cheats")
+
+-- from poorest minion code
+local old
+old = hookfunction(Instance.new("RemoteEvent").FireServer, newcclosure(function(self, ...)
+    if not checkcaller() then
+        if self.Name == "ApplyFallDamage" and settings.nofall then
+            return
+        end
+    
+        if self.Name == "SunBurn" and settings.nosunburn then
+            return
+        end
+    end
+
+    return old(self, ...)
+end))
 
 local InfJumpConnection = nil
 local InfJumpToggle = ClientTab:CreateToggle({
@@ -52,7 +68,6 @@ local InfJumpToggle = ClientTab:CreateToggle({
         elseif Toggle == false then
             if InfJumpConnection then
                  InfJumpConnection:Disconnect()
-                 print("Disconnected")
              end
         end 
 	end,
@@ -71,6 +86,26 @@ local InfJumpSlider = ClientTab:CreateSlider({
 
 
 local BlankSection1 = ClientTab:CreateSection("")
+
+local NoFireConnection = nil
+local NoFireToggle = ClientTab:CreateToggle({
+    Name = "No Fire",
+    CurrentValue = false,
+    Flag = "NoFireToggle",
+    Callback = function(Toggle)
+        if Toggle == true then
+            NoFireConnection = Character.ChildAdded:Connect(function(c)
+                if c.Name == "Burning" and c:IsA("Accessory") then
+                    CharacterRemotes.Dodge:FireServer(0, "normal")
+                end
+            end)
+        elseif Toggle == false then
+            if NoFireConnection then
+                NoFireConnection:Disconnect()
+            end
+        end
+    end,
+})
 local BreakJoints = ClientTab:CreateButton({
 	Name = "Break Joints (Reset)",
 	Callback = function()
@@ -88,21 +123,6 @@ local NoInjuriesToggle = ClientTab:CreateButton({
                     Lighting.Blur.Visible = false
                 end
             end
-        end
-    end,
-})
-local NoFireConnection = nil
-local NoFireToggle = ClientTab:CreateToggle({
-    Name = "No Fire",
-    CurrentValue = false,
-    Flag = "NoFireToggle",
-    Callback = function(Toggle)
-        if Toggle == true then
-            NoFireConnection = Character.ChildAdded:Connect(function(child)
-                if child.Name == "Burning" then
-                    CharacterRemotes.Dodge:FireServer(0, "normal")
-                end
-            end)
         end
     end,
 })
@@ -156,8 +176,7 @@ local ViewHealthDistance = GameVisuals:CreateSlider({
 local SecurityTab = Window:CreateTab("Security", 4483362458) -- Title, Image
 local NotifierSection = SecurityTab:CreateSection("Notifiers")
 
-
-local onPlayerAdded = nil
+local IlluonPlayerAdded = nil
 local IllusionistNotifier = SecurityTab:CreateToggle({
 	Name = "Illusionist Notifier",
 	CurrentValue = false,
@@ -187,17 +206,69 @@ local IllusionistNotifier = SecurityTab:CreateToggle({
                 print(rplayer)
                 NotifyIllu(rplayer)
             end
-            onPlayerAdded = game.Players.PlayerAdded:Connect(function(Player)
+            IlluonPlayerAdded = game.Players.PlayerAdded:Connect(function(Player)
                 NotifyIllu(Player)
             end)
         elseif Toggle == false then
-            if onPlayerAdded then 
-                onPlayerAdded:Disconnect()
+            if IlluonPlayerAdded then 
+                IlluonPlayerAdded:Disconnect()
                 print"disconnected"
             end
         end
     end,
 })
+
+local SpecNotifierConnection = nil
+local SpecNotifierToggle = SecurityTab:CreateToggle({
+	Name = "Spec User Notifier",
+	CurrentValue = false,
+	Flag = "SpecNotifier", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Toggle)
+        local NotifySpec = function(TargetPlayer)
+            local TargetBackpack = TargetPlayer:WaitForChild("Backpack")
+            local TargetCharacter = TargetPlayer.Character or TargetPlayer.CharacterAdded:Wait()
+
+            if TargetBackpack:FindFirstChildOfClass("Tool"):FindFirstChild("SpecialSkill") then
+                local specTable = {}
+
+                for i,v in pairs(TargetBackpack:GetChildren()) do
+                    if v:IsA("Tool") == true then
+                        if v:FindFirstChild("SpecialSkill") then
+                            table.insert(specTable, v.Name)
+                        end
+                    end
+                end
+                Rayfield:Notify({
+                    Title = TargetPlayer.Name.." has specs!",
+                    Content =  TargetPlayer.Name.."has: "..table.concat(specTable, ", "),
+                    Duration = 1e9,
+                    Image = 4483362458,
+                    Actions = { -- Notification Buttons
+                        Ignore = {
+                          Name = "Alright"
+                        },
+                    },
+                 })
+                 specTable = {}
+                 return
+            end
+        end
+        
+        if Toggle == true then
+            for i,rplayer in next, game.Players:GetChildren() do
+                NotifySpec(rplayer)
+            end
+            SpecNotifierConnection = game.Players.PlayerAdded:Connect(function(Player)
+                NotifySpec(Player)
+            end)
+        elseif Toggle == false then
+            if SpecNotifierConnection then 
+                SpecNotifierConnection:Disconnect()
+            end
+        end
+    end,
+})
+
 
 local AutomationTab = Window:CreateTab("Automation", 4483362458) -- Title, Image
 local NotifierSection = AutomationTab:CreateSection("Craft Potions")
