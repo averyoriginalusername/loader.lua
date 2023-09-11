@@ -15,7 +15,6 @@ do
 	ClientHWID = CheckExecutor({Valyse = true}) and gethwid() or game:GetService('RbxAnalyticsService'):GetClientId()
 	for i: number, scriptLink in next, GameList do
 		if i == game.PlaceId then
-			print("ye")
 			return scriptLink()
 		end
 	end
