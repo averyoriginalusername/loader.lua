@@ -1,5 +1,16 @@
 if game.PlaceId ~= 13747403394 then return end
 
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local PlayerBackpack = Player:WaitForChild("Backpack")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local CharacterRemotes = Character:FindFirstChild("CharacterHandler"):FindFirstChild("Remotes")
+
+local ClientCheatSettings = {
+    ["JumpPower"] = 0;
+    ["HealthDistance"] = 0;
+}
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
 	Name = "Multiware: Richest Minion",
@@ -11,14 +22,6 @@ local Window = Rayfield:CreateWindow({
 		FileName = "mwRLRMConfig"
 	},
 })
-
-local ClientCheatSettings = {
-    ["JumpPower"] = 0;
-    ["HealthDistance"] = 0;
-}
-local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
 local ClientTab = Window:CreateTab("Client Modification", 4483362458) -- Title, Image
 local ClientSection = ClientTab:CreateSection("Client Cheats")
@@ -76,6 +79,32 @@ local BreakJoints = ClientTab:CreateButton({
 		Character:BreakJoints()
 	end,
 })
+local NoInjuriesToggle = ClientTab:CreateToggle({
+    Name = "No Injuries"
+    CurrentValue = false,
+    Flag = "NoInjuriesToggle"
+    Callback = function(Toggle)
+        if Toggle == true then
+
+        end
+    end
+})
+local NoFireConnection = nil
+local NoFireToggle = ClientTab:CreateToggle({
+    Name = "No Fire"
+    CurrentValue = false,
+    Flag = "NoFireToggle"
+    Callback = function(Toggle)
+        if Toggle == true then
+            NoFireConnection = Character.ChildAdded:Connect(function(child)
+                if Child.Name == "Fire" then
+                    CharacterRemotes.Dodge:Fire(0, "normal")
+                end
+            end)
+        end
+    end
+})
+
 local GameVisuals = Window:CreateTab("Game Visuals", 4483362458) -- Title, Image
 local ClientSection = GameVisuals:CreateSection("Visuals Cheats")
 
@@ -166,6 +195,76 @@ local IllusionistNotifier = SecurityTab:CreateToggle({
             end
         end
     end,
+})
+
+local AutomationTab = Window:CreateTab("Automation", 4483362458) -- Title, Image
+local NotifierSection = AutomationTab:CreateSection("Craft Potions")
+
+local Stations = workspace.Stations
+local AmountToCraft = 0
+local CurrentlySelected = "None"
+local PotionRecipes = {
+    ["Health Potion"] = {
+        ["Scroom"] = 2;
+        ["Lava Flower"] = 1;
+    }
+}
+
+local PotionsDropdown = AutomationTab:CreateDropdown({
+	Name = "Select Potion",
+	Options = {"Health Potion","Tespian Elixir"},
+	CurrentOption = "Health Potion",
+	Flag = "PotionDropdown", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Option)
+	  	  CurrentlySelected = Option
+	end,
+})
+local PotionAmount = AutomationTab:CreateInput({
+	Name = "Potion Amount (NUMBERS ONLY)",
+	PlaceholderText = "1",
+	RemoveTextAfterFocusLost = false,
+	Callback = function(Text)
+		AmountToCraft = tonumber(Text)
+	end,
+})
+local StartedCrafting = false
+local BeginCrafting = AutomationTab:CreateButton({
+	Name = "Begin Crafting",
+	Callback = function()
+        StartedCrafting = true
+
+        local getIngredientAmounts = function(Ingredient)
+            local ingredientCount = 0
+
+            for i,v in 
+        end
+
+        while StartedCrafting == true do wait()
+            if StartedCrafting == false then
+                 break
+            end
+            if CurrentlySelected ~= "None" then
+                for i,cauldron in pairs(Stations:GetChildren()) do
+                    local Station = cauldron.Name == "AlchemyStation" and cauldron:IsA("Model") == true
+                    if (Character.HumanoidRootPart.Position - cauldron.Bucket.Position) > 10 then
+                        Rayfield:Notify({
+                            Title = "Error",
+                            Content = "You must be within 10 studs of a crafting station.",
+                            Duration = 1e9,
+                            Image = 4483362458,
+                            Actions = { -- Notification Buttons
+                                Ignore = {
+                                  Name = "Alright"
+                                },
+                            },
+                         })
+                         StartedCrafting = false
+                        break
+                    end
+                end
+            end
+        end
+	end,
 })
 --[[
 local Label = Tab:CreateLabel("Label Example")
