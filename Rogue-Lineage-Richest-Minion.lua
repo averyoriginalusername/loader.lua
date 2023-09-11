@@ -100,7 +100,7 @@ local NoFireToggle = ClientTab:CreateToggle({
         if Toggle == true then
             NoFireConnection = Character.ChildAdded:Connect(function(child)
                 if child.Name == "Burning" then
-                    CharacterRemotes.Dodge:Fire(0, "normal")
+                    CharacterRemotes.Dodge:FireServer(0, "normal")
                 end
             end)
         end
