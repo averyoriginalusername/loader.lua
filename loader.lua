@@ -3,10 +3,10 @@ do
 		[13747403394] =  loadstring(game:HttpGet("https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua"));
 		[7162704734] = loadstring(game:HttpGet("https://raw.githubusercontent.com/averyoriginalusername/main/main/Fighting-Game.lua"));
 		-- TYPE SOUL
-		[14069678431] = loadstring(game:HttpGet(https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua));
-		[1] = loadstring(game:HttpGet(https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua));
-		[2] = loadstring(game:HttpGet(https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua));
-		[3] = loadstring(game:HttpGet(https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua));
+		[14069678431] = loadstring(game:HttpGet("https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua"));
+		[1] = loadstring(game:HttpGet("https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua"));
+		[2] = loadstring(game:HttpGet("https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua"));
+		[3] = loadstring(game:HttpGet("https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua"));
 	}
 	local MultiplePlaceGames = {
 	}
