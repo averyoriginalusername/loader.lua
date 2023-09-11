@@ -1,5 +1,3 @@
-if game.PlaceId ~= 13747403394 then return end
-
 local Player = game.Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local PlayerBackpack = Player:WaitForChild("Backpack")
