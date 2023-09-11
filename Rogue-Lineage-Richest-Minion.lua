@@ -3,6 +3,7 @@ local Character = Player.Character or Player.CharacterAdded:Wait()
 local PlayerBackpack = Player:WaitForChild("Backpack")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local CharacterRemotes = Character:FindFirstChild("CharacterHandler"):FindFirstChild("Remotes")
+local GetRemote = game.ReplicatedStorage.Requests:WaitForChild("Get")
 
 local ClientCheatSettings = {
     ["JumpPower"] = 0;
@@ -20,6 +21,7 @@ local Window = Rayfield:CreateWindow({
 		FileName = "mwRLRMConfig"
 	},
 })
+
 local ClientTab = Window:CreateTab("Client Modification", 4483362458) -- Title, Image
 local ClientSection = ClientTab:CreateSection("Client Cheats")
 
@@ -76,13 +78,16 @@ local BreakJoints = ClientTab:CreateButton({
 		Character:BreakJoints()
 	end,
 })
-local NoInjuriesToggle = ClientTab:CreateToggle({
-    Name = "No Injuries",
-    CurrentValue = false,
-    Flag = "NoInjuriesToggle",
+local NoInjuriesToggle = ClientTab:CreateButton({
+    Name = "No Blindness",
     Callback = function(Toggle)
         if Toggle == true then
-
+            local GetCall = Get:InvokeServer({"Injuries"})
+            if GetCall.Injuries:find("dizzy") then
+                if Lighting.Blur.Visible == true then
+                    Lighting.Blur.Visible = false
+                end
+            end
         end
     end,
 })
@@ -94,14 +99,10 @@ local NoFireToggle = ClientTab:CreateToggle({
     Callback = function(Toggle)
         if Toggle == true then
             NoFireConnection = Character.ChildAdded:Connect(function(child)
-                if Child.Name == "Fire" then
+                if child.Name == "Burning" then
                     CharacterRemotes.Dodge:Fire(0, "normal")
                 end
             end)
-        elseif Toggle == false then
-            if NoFireConnection then
-                NoFireConnection:Disconnect()
-            end
         end
     end,
 })
