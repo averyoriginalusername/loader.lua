@@ -26,7 +26,7 @@ local ClientTab = Window:CreateTab("Client Cheats", 4483362458) -- Title, Image
 local Section = ClientTab:CreateSection("Movement")
 
 
-local OriginalWalkspeed = Character.Humanoid.Walkspeed
+local OriginalWalkspeed = Character.Humanoid.WalkSpeed
 local WalkspeedConnection = nil
 local WalkspeedToggle = ClientTab:CreateToggle({
 	Name = "Walkspeed",
