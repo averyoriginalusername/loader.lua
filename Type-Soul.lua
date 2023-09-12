@@ -25,7 +25,28 @@ local Window = Rayfield:CreateWindow({
 local ClientTab = Window:CreateTab("Client Cheats", 4483362458) -- Title, Image
 local Section = ClientTab:CreateSection("Movement")
 
-
+local NoclipConnection = nil
+local NoclipToggle = ClientTab:CreateToggle({
+	Name = "Noclip",
+	CurrentValue = false,
+	Flag = "NoclipToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Toggle)
+        if Toggle == true then
+			NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
+				for i,bp in pairs(Character:GetChildren()) do
+					if bp:IsA("BasePart") == true then
+						bp.CanCollide = false
+					end
+				end
+			end)
+        elseif Toggle == false then
+			if NoclipConnection then
+				NoclipConnection:Disconnect()
+				Character.Torso.CanCollide = true
+			end
+		end
+	end,
+})
 local OriginalWalkspeed = Character.Humanoid.WalkSpeed
 local WalkspeedConnection = nil
 local WalkspeedToggle = ClientTab:CreateToggle({
