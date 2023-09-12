@@ -33,9 +33,9 @@ local NoclipToggle = ClientTab:CreateToggle({
 	Callback = function(Toggle)
         if Toggle == true then
 			NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
-				for i,bp in pairs(Character:GetChildren()) do
-					if bp:IsA("BasePart") == true then
-						bp.CanCollide = false
+				for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+					if v:IsA("BasePart") == true then
+						v.CanCollide = false
 					end
 				end
 			end)
