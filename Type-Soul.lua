@@ -7,6 +7,7 @@ local CharacterRemotes = Character:WaitForChild("CharacterHandler"):WaitForChild
 local Settings = {
 	["Client Cheats"] = {
 		["WalkSpeed"] = 15
+		["JumpPower"]
 	}
 }
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -25,6 +26,7 @@ local ClientTab = Window:CreateTab("Client Cheats", 4483362458) -- Title, Image
 local Section = ClientTab:CreateSection("Movement")
 
 
+local OriginalWalkspeed = Character.Humanoid.Walkspeed
 local WalkspeedConnection = nil
 local WalkspeedToggle = ClientTab:CreateToggle({
 	Name = "Walkspeed",
@@ -38,6 +40,7 @@ local WalkspeedToggle = ClientTab:CreateToggle({
         elseif Toggle == false then
 			if WalkspeedConnection then
 				WalkspeedConnection:Disconnect()
+				Character.Humanoid.WalkSpeed = OriginalWalkspeed
 			end
 		end
 	end,
@@ -55,36 +58,46 @@ local WalkSpeedSlider = ClientTab:CreateSlider({
 	end,
 })
 
-local AutoSprintConnection = nil
-local UISConnection = nil
-local AutoSprintToggle = ClientTab:CreateToggle({
-	Name = "Auto-Sprint",
+
+local InfJumpConnection = nil
+local InfJumpToggle = ClientTab:CreateToggle({
+	Name = "Infinite Jump",
 	CurrentValue = false,
-	Flag = "AutosprintToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Flag = "InfJumpToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
+        local UserInputService = game:GetService("UserInputService")
+
         if Toggle == true then
-            AutoSprintConnection = game:GetService("RunService").RenderStepped:Connect(function()
-                UISConnection = game:GetService("UserInputService").InputBegan:Connect(function(K,_GPE)
-                    if _GPE then return end
-                    if K.KeyCode == Enum.KeyCode.W then
-                        if Toggle == false then return end
-                        for i = 1, 2 do
-                            if i == 1 then
-                                CharacterRemotes.Sprint:FireServer("Released")
-                            elseif i == 2 then
-                                CharacterRemotes.Sprint:FireServer("Pressed")
-                            end
-                        end
-                     end
-                end)
-            end)            
+            InfJumpConnection = game:GetService("RunService").RenderStepped:Connect(function()
+                local NewBV 
+                while UserInputService:IsKeyDown("Space") do wait()
+                    if not HumanoidRootPart:FindFirstChild("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") then
+                        NewBV = Instance.new("BodyVelocity")
+                        NewBV.Name = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                        NewBV.MaxForce = Vector3.new(0, math.huge, 0)
+                        NewBV.Velocity = Vector3.new(0, Settings["Client Cheats"].JumpPower, 0)
+                        NewBV.Parent = HumanoidRootPart
+                    end
+                end
+                if NewBV then
+                     NewBV:Destroy()
+                end
+            end)
         elseif Toggle == false then
-            if AutoSprintConnection then
-                AutoSprintConnection:Disconnect()
-            end
-			if UISConnection then
-				UISConnection:Disconnect()
-			end
-        end
+            if InfJumpConnection then
+                 InfJumpConnection:Disconnect()
+             end
+        end 
+	end,
+})
+local InfJumpSlider = ClientTab:CreateSlider({
+	Name = "Infinite Jump Power",
+	Range = {0, 150},
+	Increment = 1,
+	Suffix = "Jump Power",
+	CurrentValue = ClientCheatSettings.JumpPower,
+	Flag = "JumpPowerSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(SliderValue)
+		Settings["Client Cheats"].JumpPower = SliderValue
 	end,
 })
