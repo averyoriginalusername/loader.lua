@@ -23,7 +23,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 local ClientTab = Window:CreateTab("Client Cheats", 4483362458) -- Title, Image
-local Section = ClientTab:CreateSection("Movement")
+local MovementSection = ClientTab:CreateSection("Movement")
 
 local NoclipConnection = nil
 local NoclipToggle = ClientTab:CreateToggle({
@@ -120,5 +120,13 @@ local InfJumpSlider = ClientTab:CreateSlider({
 	Flag = "JumpPowerSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(SliderValue)
 		Settings["Client Cheats"].JumpPower = SliderValue
+	end,
+})
+
+local OtherSection = ClientTab:CreateSection("Others")
+local BreakJoints = ClientTab:CreateButton({
+	Name = "Break Joints (Can be used to become lost soul)",
+	Callback = function()
+		Character:BreakJoints()
 	end,
 })
