@@ -4,10 +4,30 @@ local PlayerBackpack = Player:WaitForChild("Backpack")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local CharacterRemotes = Character:WaitForChild("CharacterHandler"):WaitForChild("Remotes")
 local GetRemote = game.ReplicatedStorage.Requests:WaitForChild("Get")
+local Stations = workspace.Stations
 
-local ClientCheatSettings = {
-    ["JumpPower"] = 0;
-    ["HealthDistance"] = 0;
+local Settings = {
+    ["Client Cheats"] = {
+         ["JumpPower"] = 0;
+         ["HealthDistance"] = 0;
+    };
+    ["Auto Farms"] = {
+        ["PlayerDetectionThreshold"] = 35;
+        ["UseWebhook"] = false;
+        ["LogOnScroll"] = {
+            Enabled = false;
+            Scroll = "None";
+        };
+    }
+}
+
+local AmountToCraft = 0
+local CurrentlySelected = "None"
+local PotionRecipes = {
+    ["Health Potion"] = {
+        ["Scroom"] = 2;
+        ["Lava Flower"] = 1;
+    }
 }
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -26,20 +46,7 @@ local ClientTab = Window:CreateTab("Client Modification", 4483362458) -- Title, 
 local ClientSection = ClientTab:CreateSection("Client Cheats")
 
 -- from poorest minion code
-local old
-old = hookfunction(Instance.new("RemoteEvent").FireServer, newcclosure(function(self, ...)
-    if not checkcaller() then
-        if self.Name == "ApplyFallDamage" and settings.nofall then
-            return
-        end
-    
-        if self.Name == "SunBurn" and settings.nosunburn then
-            return
-        end
-    end
 
-    return old(self, ...)
-end))
 
 local InfJumpConnection = nil
 local InfJumpToggle = ClientTab:CreateToggle({
@@ -57,7 +64,7 @@ local InfJumpToggle = ClientTab:CreateToggle({
                         NewBV = Instance.new("BodyVelocity")
                         NewBV.Name = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                         NewBV.MaxForce = Vector3.new(0, math.huge, 0)
-                        NewBV.Velocity = Vector3.new(0, ClientCheatSettings.JumpPower, 0)
+                        NewBV.Velocity = Vector3.new(0, Settings["Client Cheats"].JumpPower, 0)
                         NewBV.Parent = HumanoidRootPart
                     end
                 end
@@ -77,10 +84,10 @@ local InfJumpSlider = ClientTab:CreateSlider({
 	Range = {0, 150},
 	Increment = 1,
 	Suffix = "Jump Power",
-	CurrentValue = ClientCheatSettings.JumpPower,
+	CurrentValue = Settings["Client Cheats"].JumpPower,
 	Flag = "JumpPowerSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(SliderValue)
-		ClientCheatSettings.JumpPower = SliderValue
+		Settings["Client Cheats"].JumpPower = SliderValue
 	end,
 })
 
@@ -141,7 +148,7 @@ local EyesOfElemira = GameVisuals:CreateToggle({
                 if v:IsA("Model") == true then
                     local TargetHumanoid = v:FindFirstChild("Humanoid")
                     if TargetHumanoid then
-                    	TargetHumanoid.HealthDisplayDistance = ClientCheatSettings.HealthDistance
+                    	TargetHumanoid.HealthDisplayDistance = Settings["Client Cheats"].HealthDistance
                         TargetHumanoid.HealthDisplayType = val and Enum.HumanoidHealthDisplayType.AlwaysOn or Enum.HumanoidHealthDisplayType.AlwaysOff
                     end
                 end
@@ -166,10 +173,10 @@ local ViewHealthDistance = GameVisuals:CreateSlider({
 	Range = {0, 150},
 	Increment = 1,
 	Suffix = "Studs",
-	CurrentValue = ClientCheatSettings.JumpPower,
+	CurrentValue = Settings["Client Cheats"].HealthDistance,
 	Flag = "ViewHealthDistanceSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(SliderValue)
-        ClientCheatSettings.HealthDistance = SliderValue
+        Settings["Client Cheats"].HealthDistance = SliderValue
 	end,
 })
 
@@ -271,70 +278,136 @@ local SpecNotifierToggle = SecurityTab:CreateToggle({
 
 
 local AutomationTab = Window:CreateTab("Automation", 4483362458) -- Title, Image
-local NotifierSection = AutomationTab:CreateSection("Craft Potions")
+local NotifierSection = AutomationTab:CreateSection("Gacha Autofarm")
 
-local Stations = workspace.Stations
-local AmountToCraft = 0
-local CurrentlySelected = "None"
-local PotionRecipes = {
-    ["Health Potion"] = {
-        ["Scroom"] = 2;
-        ["Lava Flower"] = 1;
-    }
-}
---[[
-local Label = Tab:CreateLabel("Label Example")
+local HttpService = game:GetService("HttpService")
+function GetWebhookOwner()
+	if not Settings["Auto Farms"].UseWebhook then return end
+	return HttpService:JSONDecode(HttpService:GetAsync(GachaAutofarmWebhook))["user"]["username"] or "here"
+end
+function SendMessageAsync(Message)
+	if not Settings["Auto Farms"].UseWebhook then return end
+	HttpService:PostAsync(GachaAutofarmWebhook or "", HttpService:JSONEncode({["content"] = Message}))
+end
 
-local Paragraph = Tab:CreateParagraph({Title = "Paragraph Example", Content = "Paragraph Example"})
+local GachaFarmConnection = nil
+local GachaFarmToggle
+local PlayerNearby = false
+GachaFarmToggle = AutomationTab:CreateToggle({
+	Name = "Autofarm Gacha",
+	CurrentValue = false,
+	Callback = function(Toggle)
+        local CanGacha = function()
+            local wawawawawa = game:GetService("ReplicatedStorage").Requests.Get:InvokeServer({"DaysSurvived", "LastGacha", "Silver"})
+            local DaysSurvived =  wawawawawa.DaysSurvived
+            local LastGacha = wawawawawa.LastGacha
+            local Silver = wawawawawa.Silver
 
-local Input = Tab:CreateInput({
-	Name = "Input Example",
-	PlaceholderText = "Input Placeholder",
-	RemoveTextAfterFocusLost = false,
-	Callback = function(Text)
-		-- The function that takes place when the input is changed
-    		-- The variable (Text) is a string for the value in the text box
+            if DaysSurvived ~= LastGacha and Silver >= 250 then
+                print"can gacha"
+                return true
+            end
+            return false
+        end
+
+        if Toggle == true then
+            GachaFarmConnection = game:GetService("RunService").RenderStepped:Connect(function()
+                game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(scroll)
+                    if scroll == Settings["Auto Farms"].LogOnScroll.Scroll then
+                        game.Players.LocalPlayer:Kick("Obtained: "..Settings["Auto Farm"].LogOnScroll.Scroll)
+                    end
+                end)
+                if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
+                    Rayfield:Notify({Title="Error",Content="You are not near Xenyari!",Duration=5,Image=4483362458,Actions={Ignore={Name="Alright"},},})
+                    GachaFarmToggle:Set(false)
+                    GachaFarmConnection:Disconnect()
+                end
+
+                if not PlayerNearby then
+                    for i,v in workspace.Live:GetChildren() do
+                        if v:IsA("Model") == true then
+                            local PotentialPlayer = v
+                            if (PotentialPlayer.PrimaryPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude <= 40 then
+                                PlayerNearby = true
+                                repeat
+                                    game:GetService("ReplicatedStorage").toMenu:FireServer()
+                                    wait(1)
+                                    game:GetService("Players").LocalPlayer.PlayerGui.StartMenu.Finish:FireServer()
+                                    wait(30)
+                                until (PotentialPlayer.PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 40
+                                PlayerNearby = false
+                            end
+                        end
+                    end
+                end
+                
+                while (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude >= 10 do wait()
+                    if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
+                        Rayfield:Notify({Title="Error",Content="You are not near Xenyari!",Duration=5,Image=4483362458,Actions={Ignore={Name="Alright"},},})
+                        break
+                    end
+                    if CanGacha() == true  then
+                        fireclickdetector(workspace.NPCs.Xenyari.ClickDetector)
+                        wait(.5)
+                        local args = {[1] = {["choice"] = "Sure, I'll pay."}}
+                        game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
+                        wait(.5)
+                        args = {[1]={["exit"] = true}}
+                        game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
+                    end
+
+                    repeat
+                        wait()
+                    until CanGacha() == true
+                end
+            end)
+        elseif Toggle == false then
+            if GachaFarmConnection then
+                GachaFarmConnection:Disconnect()
+            end
+        end
+    end,
+})
+
+local NotifierSection = AutomationTab:CreateSection("Gacha Autofarm (Settings)")
+
+
+local PlayerDetectionThresholdSlider = AutomationTab:CreateSlider({
+	Name = "Player Detection Threshold (not working rn will fix later)",
+	Range = {0, 150},
+	Increment = 1,
+	Suffix = "Studs",
+	CurrentValue = Settings["Auto Farms"].PlayerDetectionThreshold,
+	Flag = "PlayerDetectionThresholdAF", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(SliderValue)
+        Settings["Auto Farms"].PlayerDetectionThreshold = SliderValue
 	end,
 })
 
-local Dropdown = Tab:CreateDropdown({
-	Name = "Dropdown Example",
-	Options = {"Option 1","Option 2"},
-	CurrentOption = "Option 1",
-	Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+local UseWebhookToggle = AutomationTab:CreateToggle({
+	Name = "Use Webhook",
+	CurrentValue = false,
+	Flag = "UseWebhookTOGGLE", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Toggle)
+       Settings["Auto Farms"].UseWebhook = Toggle
+	end,
+})
+
+local LogOnScrollToggle = AutomationTab:CreateToggle({
+	Name = "Log on scroll",
+	CurrentValue = false,
+	Flag = "LogOnScrollToggleeasy", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Toggle)
+       Settings["Auto Farms"]LogOnScroll.Enabled = Toggle
+	end,
+})
+
+local LogOnScrollDropdown = AutomationTab:CreateDropdown({
+	Name = "Select Scroll",
+	Options = {"None","Scroll of Snarvindur","Scroll of Hoppa","Scroll of Percutiens","Scroll of Fimbulvetr","Scroll of Manus Dei","Scroll of Nocere","Scroll of Telorum","Scroll of Tenebris"},
+	CurrentOption = Settings["Auto Farms"].LogOnScroll.Scroll,
+	Flag = "LogOnScrollDropdownez", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Option)
-	  	  -- The function that takes place when the selected option is changed
-    	  -- The variable (Option) is a string for the value that the dropdown was changed to
+        Settings["Auto Farms"].LogOnScroll.Scroll = Option
 	end,
 })
-
-local Button = Tab:CreateButton({
-	Name = "Destroy UI",
-	Callback = function()
-		Rayfield:Destroy()
-	end,
-})
---]]
--- Extras
-
--- getgenv().SecureMode = true -- Only Set To True If Games Are Detecting/Crashing The UI
-
--- Rayfield:Destroy() -- Destroys UI
-
--- Rayfield:LoadConfiguration() -- Enables Configuration Saving
-
--- Section:Set("Section Example") -- Use To Update Section Text
-
--- Button:Set("Button Example") -- Use To Update Button Text
-
--- Toggle:Set(false) -- Use To Update Toggle
-
--- Slider:Set(10) -- Use To Update Slider Value
-
--- Label:Set("Label Example") -- Use To Update Label Text
-
--- Paragraph:Set({Title = "Paragraph Example", Content = "Paragraph Example"}) -- Use To Update Paragraph Text
-
--- Keybind:Set("RightCtrl") -- Keybind (string) -- Use To Update Keybind
-
--- Dropdown:Set("Option 2") -- The new option value -- Use To Update/Set New Dropdowns
