@@ -7,74 +7,38 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
-	Name = "Multiware: Fighting Game",
-	LoadingTitle = "Loading: Fighting Game...",
-	LoadingSubtitle = "by ???",
+	Name = "Rayfield Example Window",
+	LoadingTitle = "Rayfield Interface Suite",
+	LoadingSubtitle = "by Sirius",
 	ConfigurationSaving = {
 		Enabled = true,
-		FolderName = "multiwareConfig",
-		FileName = "mwFGConfig"
+		FolderName = "Rayfield Interface Suite",
+		FileName = "Big Hub"
 	},
+	KeySystem = false, -- Set this to true to use their key system
+	KeySettings = {
+		Title = "Sirius Hub",
+		Subtitle = "Key System",
+		Note = "Join the discord (discord.gg/sirius)",
+		SaveKey = true,
+		Key = "ABCDEF"
+	}
 })
 
-local ClientTab = Window:CreateTab("Client Cheats", 4483362458) -- Title, Image
+Rayfield:Notify("Title Example", "Content/Description Example", 4483362458) -- Notfication -- Title, Content, Image
 
+local Tab = Window:CreateTab("Tab Example", 4483362458) -- Title, Image
 
-local GameVisualsTab = Window:CreateTab("Game Visuals", 4483362458) -- Title, Image
-local OldBrightness = game.Lighting.Brightness
+local Section = Tab:CreateSection("Section Example")
 
-local FBToggle = GameVisualsTab:CreateToggle({
-	Name = "Enable Fullbright",
-	CurrentValue = false,
-	Flag = "FBToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-        if Toggle == true then
-            game.Lighting.Brightness = 40
-        else
-            game.Lighting.Brightness = OldBrightness
-        end
-	end,
-})
-local DisableShadowsToggle = GameVisualsTab:CreateToggle({
-	Name = "Disable Shadows",
-	CurrentValue = false,
-	Flag = "ShadowsToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-        local TurnOffShadows = function(Bool)
-            if Bool == true then
-                for i,v in workspace:GetDescendants() do
-                    if v:IsA("BasePart") then
-                        v.CastShadows = Bool and false or true
-                        game.Lighting.GlobalShadows = Bool and false or true
-                    end
-                end
-            end
-        end
-	
-        TurnOffShadows(Toggle)
-    end,
-})
-
-local Slider = ClientTab:CreateSlider({
-	Name = "Slider Example",
-	Range = {0, 100},
-	Increment = 10,
-	Suffix = "Bananas",
-	CurrentValue = 10,
-	Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Value)
-		-- The function that takes place when the slider changes
-    		-- The variable (Value) is a number which correlates to the value the slider is currently at
-	end,
-})
-local Button = ClientTab:CreateButton({
+local Button = Tab:CreateButton({
 	Name = "Button Example",
 	Callback = function()
 		-- The function that takes place when the button is pressed
 	end,
 })
 
-local Toggle = ClientTab:CreateToggle({
+local Toggle = Tab:CreateToggle({
 	Name = "Toggle Example",
 	CurrentValue = false,
 	Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
@@ -84,7 +48,7 @@ local Toggle = ClientTab:CreateToggle({
 	end,
 })
 
-local Slider = ClientTab:CreateSlider({
+local Slider = Tab:CreateSlider({
 	Name = "Slider Example",
 	Range = {0, 100},
 	Increment = 10,
@@ -97,11 +61,11 @@ local Slider = ClientTab:CreateSlider({
 	end,
 })
 
-local Label = ClientTab:CreateLabel("Label Example")
+local Label = Tab:CreateLabel("Label Example")
 
-local Paragraph = ClientTab:CreateParagraph({Title = "Paragraph Example", Content = "Paragraph Example"})
+local Paragraph = Tab:CreateParagraph({Title = "Paragraph Example", Content = "Paragraph Example"})
 
-local Input = ClientTab:CreateInput({
+local Input = Tab:CreateInput({
 	Name = "Input Example",
 	PlaceholderText = "Input Placeholder",
 	RemoveTextAfterFocusLost = false,
@@ -111,7 +75,7 @@ local Input = ClientTab:CreateInput({
 	end,
 })
 
-local Keybind = ClientTab:CreateKeybind({
+local Keybind = Tab:CreateKeybind({
 	Name = "Keybind Example",
 	CurrentKeybind = "Q",
 	HoldToInteract = false,
@@ -140,26 +104,3 @@ local Button = Tab:CreateButton({
 	end,
 })
 
--- Extras
-
--- getgenv().SecureMode = true -- Only Set To True If Games Are Detecting/Crashing The UI
-
--- Rayfield:Destroy() -- Destroys UI
-
--- Rayfield:LoadConfiguration() -- Enables Configuration Saving
-
--- Section:Set("Section Example") -- Use To Update Section Text
-
--- Button:Set("Button Example") -- Use To Update Button Text
-
--- Toggle:Set(false) -- Use To Update Toggle
-
--- Slider:Set(10) -- Use To Update Slider Value
-
--- Label:Set("Label Example") -- Use To Update Label Text
-
--- Paragraph:Set({Title = "Paragraph Example", Content = "Paragraph Example"}) -- Use To Update Paragraph Text
-
--- Keybind:Set("RightCtrl") -- Keybind (string) -- Use To Update Keybind
-
--- Dropdown:Set("Option 2") -- The new option value -- Use To Update/Set New Dropdowns
