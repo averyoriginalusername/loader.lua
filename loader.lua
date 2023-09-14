@@ -1,5 +1,5 @@
 local HttpLink do
-	local ChosenScript = request({Url = "https://httpbin.org/get", Method = "GET"}.Body)
+	local ChosenScript = "https://httbin.org/get"
 	local GameList = {
 		[13747403394] =  game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua');
 		[7162704734] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Fighting-Game.lua');
