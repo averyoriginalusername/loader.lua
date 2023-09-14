@@ -318,13 +318,13 @@ GachaFarmToggle = AutomationTab:CreateToggle({
                     if scroll.Name:match("Scroll") then
                         SendMessageAsync("rolled: "..scroll.Name)
                     end
-                    if scroll.Name:match(Settings["Auto Farms"].LogOnScroll.Scroll) then
+                    if scroll.Name:match(tostring(Settings["Auto Farms"].LogOnScroll.Scroll)) then
                         game.Players.LocalPlayer:Kick("Obtained: "..tostring(Settings["Auto Farm"].LogOnScroll.Scroll))
                         GachaFarmToggle:Set(false)
                         GachaFarmConnection:Disconnect()
                     end
                 end)
-                if (game.Players.LocalPlayer.Character.PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
+                if (game.Players.LocalPlayer:WaitForChild("Character", true).PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
                     Rayfield:Notify({Title="Error",Content="You are not near Xenyari!",Duration=5,Image=4483362458,Actions={Ignore={Name="Alright"},},})
                     GachaFarmToggle:Set(false)
                     GachaFarmConnection:Disconnect()
@@ -334,7 +334,7 @@ GachaFarmToggle = AutomationTab:CreateToggle({
                     for i,v in workspace.Live:GetChildren() do
                         if v:IsA("Model") == true then
                             local PotentialPlayer = v
-                            if (PotentialPlayer.PrimaryPart.Position - game.Players.LocalPlayer.Character.PrimaryPart.Position).magnitude <= 40 then
+                            if (PotentialPlayer.PrimaryPart.Position - game.Players.LocalPlayer:WaitForChild("Character", true).PrimaryPart.Position).magnitude <= 40 then
                                 PlayerNearby = true
                                 repeat
                                     game:GetService("ReplicatedStorage").toMenu:FireServer()
@@ -348,7 +348,7 @@ GachaFarmToggle = AutomationTab:CreateToggle({
                     end
                 end
                 
-                while (game.Players.LocalPlayer.Character.PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude >= 10 do wait()
+                while (game.Players.LocalPlayer:WaitForChild("Character", true).PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude >= 10 do wait()
                     if (game.Players.LocalPlayer.Character.PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
                         Rayfield:Notify({Title="Error",Content="You are not near Xenyari!",Duration=5,Image=4483362458,Actions={Ignore={Name="Alright"},},})
                         break
