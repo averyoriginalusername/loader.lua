@@ -283,10 +283,12 @@ local NotifierSection = AutomationTab:CreateSection("Gacha Autofarm")
 local HttpService = game:GetService("HttpService")
 function GetWebhookOwner()
 	if not Settings["Auto Farms"].UseWebhook then return end
+    if not getgenv().GachaAutofarmWebhook then return end
 	return HttpService:JSONDecode(HttpService:GetAsync(GachaAutofarmWebhook))["user"]["username"] or "here"
 end
 function SendMessageAsync(Message)
 	if not Settings["Auto Farms"].UseWebhook then return end
+    if not getgenv().GachaAutofarmWebhook then return end
 	HttpService:PostAsync(GachaAutofarmWebhook or "", HttpService:JSONEncode({["content"] = Message}))
 end
 
@@ -313,6 +315,9 @@ GachaFarmToggle = AutomationTab:CreateToggle({
         if Toggle == true then
             GachaFarmConnection = game:GetService("RunService").RenderStepped:Connect(function()
                 game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(scroll)
+                    if scroll.Name:match("Scroll") then
+                        SendMessageAsync("rolled: "..scroll.Name)
+                    end
                     if scroll.Name:match(Settings["Auto Farms"].LogOnScroll.Scroll) then
                         game.Players.LocalPlayer:Kick("Obtained: "..Settings["Auto Farm"].LogOnScroll.Scroll)
                         GachaFarmToggle:Set(false)
