@@ -324,7 +324,7 @@ GachaFarmToggle = AutomationTab:CreateToggle({
                         GachaFarmConnection:Disconnect()
                     end
                 end)
-                if (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
+                if (game.Players.LocalPlayer.Character.PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
                     Rayfield:Notify({Title="Error",Content="You are not near Xenyari!",Duration=5,Image=4483362458,Actions={Ignore={Name="Alright"},},})
                     GachaFarmToggle:Set(false)
                     GachaFarmConnection:Disconnect()
@@ -334,7 +334,7 @@ GachaFarmToggle = AutomationTab:CreateToggle({
                     for i,v in workspace.Live:GetChildren() do
                         if v:IsA("Model") == true then
                             local PotentialPlayer = v
-                            if (PotentialPlayer.PrimaryPart.Position - game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position).magnitude <= 40 then
+                            if (PotentialPlayer.PrimaryPart.Position - game.Players.LocalPlayer.Character.PrimaryPart.Position).magnitude <= 40 then
                                 PlayerNearby = true
                                 repeat
                                     game:GetService("ReplicatedStorage").toMenu:FireServer()
@@ -348,8 +348,8 @@ GachaFarmToggle = AutomationTab:CreateToggle({
                     end
                 end
                 
-                while (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude >= 10 do wait()
-                    if (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
+                while (game.Players.LocalPlayer.Character.PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude >= 10 do wait()
+                    if (game.Players.LocalPlayer.Character.PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
                         Rayfield:Notify({Title="Error",Content="You are not near Xenyari!",Duration=5,Image=4483362458,Actions={Ignore={Name="Alright"},},})
                         break
                     end
