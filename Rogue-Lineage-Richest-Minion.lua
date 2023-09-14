@@ -15,7 +15,7 @@ local Settings = {
         ["PlayerDetectionThreshold"] = 35;
         ["UseWebhook"] = false;
         ["LogOnScroll"] = {
-            Enabled = false;
+            IsEnabled = false;
             Scroll = "None";
         };
     }
@@ -313,8 +313,10 @@ GachaFarmToggle = AutomationTab:CreateToggle({
         if Toggle == true then
             GachaFarmConnection = game:GetService("RunService").RenderStepped:Connect(function()
                 game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(scroll)
-                    if scroll == Settings["Auto Farms"].LogOnScroll.Scroll then
+                    if scroll.Name:match(Settings["Auto Farms"].LogOnScroll.Scroll) then
                         game.Players.LocalPlayer:Kick("Obtained: "..Settings["Auto Farm"].LogOnScroll.Scroll)
+                        GachaFarmToggle:Set(false)
+                        GachaFarmConnection:Disconnect()
                     end
                 end)
                 if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
@@ -395,10 +397,10 @@ local UseWebhookToggle = AutomationTab:CreateToggle({
 
 local LogOnScrollToggle = AutomationTab:CreateToggle({
 	Name = "Log on scroll",
-	CurrentValue = false,
-	Flag = "LogOnScrollToggleeasy", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	CurrentValue = Settings["Auto Farms"].LogOnScroll.IsEnabled,
+	Flag = "LogOnScrollToggleeeeeasy", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
-       Settings["Auto Farms"]LogOnScroll.Enabled = Toggle
+       Settings["Auto Farms"].LogOnScroll.IsEnabled = Toggle
 	end,
 })
 
