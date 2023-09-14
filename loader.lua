@@ -1,5 +1,5 @@
+local _HttpGet = nil
 local HttpLink do
-	local ChosenScript = "https://httbin.org/get"
 	local GameList = {
 		[13747403394] =  game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua');
 		[7162704734] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Fighting-Game.lua');
@@ -27,12 +27,10 @@ local HttpLink do
 				warn("Fighting Game is not supported at the moment. No GUI Detection bypass yet.")
 				return
 			end
-			ChosenScript = scriptLink
-			break
+			_HttpGet = scriptLink
+            break
 		end
 	end
-	return ChosenScript
 end
-
-local s,err=pcall(function() loadstring(HttpGet)(); end)
-if err then warn("err:	"..err) end
+local s,err=pcall(function()loadstring(_HttpGet)();end)
+if err then warn("err:	"..err);end
