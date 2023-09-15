@@ -1,15 +1,8 @@
-local _HttpGet = nil
+local _HttpGet = "return print('oops')"
 local HttpLink do
 	local GameList = {
 		[13747403394] =  game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua');
 		[7162704734] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Fighting-Game.lua');
-		-- TYPE SOUL
-		["TYPE SOUL"] = {
-			[14069678431] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
-			[1] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
-			[2] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
-			[3] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
-		};
 	}
 	local ClientHWID = nil
 	local CheckExecutor = function(Table)
