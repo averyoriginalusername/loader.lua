@@ -18,6 +18,8 @@ local Settings = {
             IsEnabled = false;
             Scroll = "None";
         };
+        ["LogOnIllusionist"] = false;
+        ["LogOnModerator"] = false;
     }
 }
 
@@ -54,6 +56,7 @@ local InfJumpToggle = ClientTab:CreateToggle({
 	CurrentValue = false,
 	Flag = "InfJumpToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
+        local HumanoidRootPart =  game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         local UserInputService = game:GetService("UserInputService")
 
         if Toggle == true then
@@ -101,7 +104,7 @@ local NoFireToggle = ClientTab:CreateToggle({
     Flag = "NoFireToggle",
     Callback = function(Toggle)
         if Toggle == true then
-            NoFireConnection = Character.ChildAdded:Connect(function(c)
+            NoFireConnection = game.Players.LocalPlayer.Character.ChildAdded:Connect(function(c)
                 if c.Name == "Burning" and c:IsA("Accessory") then
                     CharacterRemotes.Dodge:FireServer(0, "normal")
                 end
@@ -283,13 +286,13 @@ local NotifierSection = AutomationTab:CreateSection("Gacha Autofarm")
 local HttpService = game:GetService("HttpService")
 function GetWebhookOwner()
 	if not Settings["Auto Farms"].UseWebhook then return end
-    if not getgenv().GachaAutofarmWebhook then return end
-	return HttpService:JSONDecode(HttpService:GetAsync(GachaAutofarmWebhook))["user"]["username"] or "here"
+    if not getgenv().DiscordWebhook then return end
+	return HttpService:JSONDecode(HttpService:GetAsync(DiscordWebhook))["user"]["username"] or "here"
 end
 function SendMessageAsync(Message)
 	if not Settings["Auto Farms"].UseWebhook then return end
-    if not getgenv().GachaAutofarmWebhook then return end
-	HttpService:PostAsync(GachaAutofarmWebhook or "", HttpService:JSONEncode({["content"] = Message}))
+    if not getgenv().DiscordWebhook then return end
+	HttpService:PostAsync(DiscordWebhook or "", HttpService:JSONEncode({["content"] = Message}))
 end
 
 local GachaFarmConnection = nil
@@ -314,53 +317,25 @@ GachaFarmToggle = AutomationTab:CreateToggle({
 
         if Toggle == true then
             GachaFarmConnection = game:GetService("RunService").RenderStepped:Connect(function()
-                Character = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
                 game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(scroll)
                     if scroll.Name:match("Scroll") then
                         SendMessageAsync("rolled: "..scroll.Name)
                     end
                     if scroll.Name:match(tostring(Settings["Auto Farms"].LogOnScroll.Scroll)) then
-                        game.Players.LocalPlayer:Kick("Obtained: "..tostring(Settings["Auto Farm"].LogOnScroll.Scroll))
                         GachaFarmToggle:Set(false)
+                        game.Players.LocalPlayer:Kick("Obtained: "..tostring(Settings["Auto Farm"].LogOnScroll.Scroll))
                         GachaFarmConnection:Disconnect()
                     end
                 end)
-                if (Character:WaitForChild("Torso", true).Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
-                    Rayfield:Notify({Title="Error",Content="You are not near Xenyari!",Duration=5,Image=4483362458,Actions={Ignore={Name="Alright"},},})
-                    GachaFarmToggle:Set(false)
-                    GachaFarmConnection:Disconnect()
-                end
-
-                if not PlayerNearby then
-                    for i,v in workspace.Live:GetChildren() do
-                        if v:IsA("Model") == true then
-                            local PotentialPlayer = v
-                            if (PotentialPlayer.PrimaryPart.Position - Character:WaitForChild("Torso", true).Position).magnitude <= 40 then
-                                PlayerNearby = true
-                                repeat
-                                    game:GetService("ReplicatedStorage").toMenu:FireServer()
-                                    wait(1)
-                                    game:GetService("Players").LocalPlayer.PlayerGui.StartMenu.Finish:FireServer()
-                                    wait(30)
-                                until (PotentialPlayer.PrimaryPart.Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 40
-                                PlayerNearby = false
-                            end
-                        end
-                    end
-                end
-                
-                repeat wait() until Character:FindFirstChild("Torso")
-                while (Character:WaitForChild("Torso", true).Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude >= 10 do wait()
-                    if (Character:WaitForChild("Torso", true).Position - workspace.NPCs.Xenyari.HumanoidRootPart.Position).magnitude > 10 and not PlayerNearby == true then
-                        Rayfield:Notify({Title="Error",Content="You are not near Xenyari!",Duration=5,Image=4483362458,Actions={Ignore={Name="Alright"},},})
-                        break
-                    end
-                    if CanGacha() == true  then
+                while true wait()
+                    if CanGacha() == true then
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.NPCs.Xenyari.HumanoidRootPart.CFrame
+                        wait(.2)
                         fireclickdetector(workspace.NPCs.Xenyari.ClickDetector)
-                        wait(.5)
+                        wait(.25)
                         local args = {[1] = {["choice"] = "Sure, I'll pay."}}
                         game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
-                        wait(.5)
+                        wait(.25)
                         args = {[1]={["exit"] = true}}
                         game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
                     end
@@ -403,11 +378,29 @@ local UseWebhookToggle = AutomationTab:CreateToggle({
 })
 
 local LogOnScrollToggle = AutomationTab:CreateToggle({
-	Name = "Log on scroll",
+	Name = "Log On scroll",
 	CurrentValue = Settings["Auto Farms"].LogOnScroll.IsEnabled,
 	Flag = "LogOnScrollToggleeeeeasy", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
        Settings["Auto Farms"].LogOnScroll.IsEnabled = Toggle
+	end,
+})
+
+local LogOnModJoin = AutomationTab:CreateToggle({
+	Name = "Log On Moderator Join",
+	CurrentValue = Settings["Auto Farms"].LogOnModerator,
+	Flag = "LogOnModJoinToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Toggle)
+       Settings["Auto Farms"].LogOnModerator = Toggle
+	end,
+})
+
+local LogOnModJoin = AutomationTab:CreateToggle({
+	Name = "Log On Illusionist Join",
+	CurrentValue = Settings["Auto Farms"].LogOnIllusionist,
+	Flag = "LogOnModJoinToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Toggle)
+       Settings["Auto Farms"].LogOnIllusionist = Toggle
 	end,
 })
 
