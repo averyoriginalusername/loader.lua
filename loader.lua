@@ -23,9 +23,13 @@ local HttpLink do
 	ClientHWID = CheckExecutor({Valyse = true}) and gethwid() or game:GetService('RbxAnalyticsService'):GetClientId()
 	for i: number,scriptLink in next,GameList do
 		if (i == game.PlaceId) then
-			if (scriptLink:match("Fighting-Game.lua")) then
-				warn("Fighting Game is not supported at the moment. No GUI Detection bypass yet.")
-				return
+			if (scriptLink:match('Fighting-Game.lua')) then
+				if CheckExecutor({Valyse = true}) then
+					loadstring(game:HttpGet('https://raw.githubusercontent.com/Tamim468/Valyseonly/main/synsupport.lua'))();
+				else
+					warn('Fighting Game is not supported for other executors except from Valyse at the moment.')
+					return
+				end
 			end
 			_HttpGet = scriptLink
             break
