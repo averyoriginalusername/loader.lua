@@ -82,7 +82,7 @@ function newTrinketEsp(Trinket, Value)
     end)
 end
 
-local ESPSection = ClientTab:CreateSection("ESP")
+local ESPSection = GameVisualsTab:CreateSection("ESP")
 local ESPToggle = GameVisualsTab:CreateToggle({
 	Name = "Enable Trinket ESP",
 	CurrentValue = Settings["ESP Settings"]["Trinket ESP"].Enabled,
@@ -99,7 +99,7 @@ local ESPToggle = GameVisualsTab:CreateToggle({
 	end,
 })
 local ShowCommonToggle = GameVisualsTab:CreateToggle({
-	Name = "Enable Trinket ESP",
+	Name = "Show Common Trinkets",
 	CurrentValue = Settings["ESP Settings"]["Trinket ESP"]["Trinket Types"].Common,
 	Flag = "TrinketESPToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
@@ -107,7 +107,7 @@ local ShowCommonToggle = GameVisualsTab:CreateToggle({
 	end,
 })
 local ShowRareToggle = GameVisualsTab:CreateToggle({
-	Name = "Enable Trinket ESP",
+	Name = "Show Rare Trinkets",
 	CurrentValue = Settings["ESP Settings"]["Trinket ESP"]["Trinket Types"].Rare,
 	Flag = "TrinketESPToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
@@ -115,14 +115,14 @@ local ShowRareToggle = GameVisualsTab:CreateToggle({
 	end,
 })
 local ShowLegendaryToggle = GameVisualsTab:CreateToggle({
-	Name = "Enable Trinket ESP",
+	Name = "Show Legendary Trinkets",
 	CurrentValue = Settings["ESP Settings"]["Trinket ESP"]["Trinket Types"].Legendary,
 	Flag = "TrinketESPToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
         Settings["ESP Settings"]["Trinket ESP"]["Trinket Types"].Legendary = Toggle
 	end,
 })
-local GameViewSection = ClientTab:CreateSection("World View")
+local GameViewSection = GameVisualsTab:CreateSection("World View")
 
 local OldBrightness = game.Lighting.Brightness
 local OldAmbient = game.Lighting.Ambient
