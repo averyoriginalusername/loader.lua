@@ -25,8 +25,6 @@ local Window = Rayfield:CreateWindow({
 	}
 })
 
-Rayfield:Notify("Title Example", "Content/Description Example", 4483362458) -- Notfication -- Title, Content, Image
-
 local Tab = Window:CreateTab("Tab Example", 4483362458) -- Title, Image
 
 local Section = Tab:CreateSection("Section Example")
