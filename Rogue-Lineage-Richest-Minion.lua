@@ -297,7 +297,7 @@ end
 
 local GachaFarmConnection = nil
 local GachaFarmToggle
-local PlayerNearby = false
+local E = false
 GachaFarmToggle = AutomationTab:CreateToggle({
 	Name = "Autofarm Gacha",
 	CurrentValue = false,
@@ -327,22 +327,23 @@ GachaFarmToggle = AutomationTab:CreateToggle({
                         GachaFarmConnection:Disconnect()
                     end
                 end)
-                while true do wait()
+                if E == false then
                     if CanGacha() == true then
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.NPCs.Xenyari.HumanoidRootPart.CFrame
-                        wait(.2)
-                        fireclickdetector(workspace.NPCs.Xenyari.ClickDetector)
-                        wait(.25)
-                        local args = {[1] = {["choice"] = "Sure, I'll pay."}}
-                        game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
-                        wait(.25)
-                        args = {[1]={["exit"] = true}}
-                        game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
+                        repeat
+                            E = true
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.NPCs.Xenyari.HumanoidRootPart.CFrame
+                            wait(.2)
+                            fireclickdetector(workspace.NPCs.Xenyari.ClickDetector)
+                            wait(.25)
+                            local args = {[1] = {["choice"] = "Sure, I'll pay."}}
+                            game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
+                            wait(.25)
+                            args = {[1]={["exit"] = true}}
+                            game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
+                            wait(2)
+                            E = false
+                        until CanGacha() == false
                     end
-
-                    repeat
-                        wait()
-                    until CanGacha() == true
                 end
             end)
         elseif Toggle == false then
