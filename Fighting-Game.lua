@@ -35,6 +35,7 @@ local FBToggle = GameVisualsTab:CreateToggle({
 			game.Lighting.Ambient = Color3.fromRGB(255,255,255)
         else
             game.Lighting.Brightness = OldBrightness
+			game.Lighting.Ambient = OldAmbient
         end
 	end,
 })
