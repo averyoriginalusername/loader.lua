@@ -327,7 +327,7 @@ GachaFarmToggle = AutomationTab:CreateToggle({
                         GachaFarmConnection:Disconnect()
                     end
                 end)
-                while true wait()
+                while true do wait()
                     if CanGacha() == true then
                         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.NPCs.Xenyari.HumanoidRootPart.CFrame
                         wait(.2)
