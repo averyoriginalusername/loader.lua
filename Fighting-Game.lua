@@ -1,5 +1,8 @@
 getgenv().SecureMode = true
-
+local TrinketModels = {
+    ["Goblet"] = {AssetId = 13116132, Color = Color3.fromRGB(231, 141, 22), Rarity = "Common"};
+    ["Scroll"] = {AssetId = 60791940, Color = Color3.fromRGB(51, 95, 255), Rarity = "Rare"};
+}
 Settings = {
     ["Client Cheats"] = {
         Fullbright = false;
@@ -7,7 +10,7 @@ Settings = {
     };
 	["ESP Settings"] = {
 		["Trinket ESP"] = {
-			Enabled = true
+			Enabled = true,
 			["Trinket Types"] = {
 				Common = false;
 				Rare = false;
@@ -16,12 +19,6 @@ Settings = {
 		}
 	}
 }
-
-local TrinketModels = {
-    ["Goblet"] = {AssetId = 13116132, Color = Color3.fromRGB(231, 141, 22), Rarity = "Common"};
-    ["Scroll"] = {AssetId = 60791940, Color = Color3.fromRGB(51, 95, 255), Rarity = "Rare"};
-}
-
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
 	Name = "Multiware: Fighting Game",
