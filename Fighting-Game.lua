@@ -4,6 +4,7 @@ local Player = game.Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local PlayerBackpack = Player:WaitForChild("Backpack")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local CharacterRemotes = Character:WaitForChild("CharacterHandler"):WaitForChild("Remotes")
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
@@ -22,6 +23,7 @@ local ClientTab = Window:CreateTab("Client Cheats", 4483362458) -- Title, Image
 
 local GameVisualsTab = Window:CreateTab("Game Visuals", 4483362458) -- Title, Image
 local OldBrightness = game.Lighting.Brightness
+local OldAmbient = game.Lighting.Ambient
 
 local FBToggle = GameVisualsTab:CreateToggle({
 	Name = "Enable Fullbright",
@@ -30,6 +32,7 @@ local FBToggle = GameVisualsTab:CreateToggle({
 	Callback = function(Toggle)
         if Toggle == true then
             game.Lighting.Brightness = 40
+			game.Lighting.Ambient = Color3.fromRGB(255,255,255)
         else
             game.Lighting.Brightness = OldBrightness
         end
@@ -44,7 +47,7 @@ local DisableShadowsToggle = GameVisualsTab:CreateToggle({
             if Bool == true then
                 for i,v in workspace:GetDescendants() do
                     if v:IsA("BasePart") then
-                        v.CastShadows = Bool and false or true
+                        v.CastShadow = Bool and false or true
                         game.Lighting.GlobalShadows = Bool and false or true
                     end
                 end
