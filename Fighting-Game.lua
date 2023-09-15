@@ -3,14 +3,14 @@ local TrinketModels = {
     ["Goblet"] = {AssetId = 13116132, Color = Color3.fromRGB(231, 141, 22), Rarity = "Common"};
     ["Scroll"] = {AssetId = 60791940, Color = Color3.fromRGB(51, 95, 255), Rarity = "Rare"};
 }
-Settings = {
+local ESPEnabled = false
+local Settings = {
     ["Client Cheats"] = {
         Fullbright = false;
         NoShadows = false;
     };
 	["ESP Settings"] = {
 		["Trinket ESP"] = {
-			Enabled = true,
 			["Trinket Types"] = {
 				Common = false;
 				Rare = false;
@@ -54,7 +54,7 @@ function newTrinketEsp(Trinket, Value)
                         if TrinketMesh.MeshId:match(values.AssetId) then
                             TrinketDrawing.Text = name
                             TrinketDrawing.Color = values.Color
-                            if Settings["ESP Settings"]["Trinket ESP"].Enabled then
+                            if ESPEnabled then
                                 if Settings["ESP Settings"]["Trinket ESP"]["Trinket Types"][values.Rarity] == true then
                                     TrinketDrawing.Visible = true
                                 else
@@ -85,7 +85,7 @@ end
 local ESPSection = GameVisualsTab:CreateSection("ESP")
 local ESPToggle = GameVisualsTab:CreateToggle({
 	Name = "Enable Trinket ESP",
-	CurrentValue = Settings["ESP Settings"]["Trinket ESP"].Enabled,
+	CurrentValue = ESPEnabled,
 	Flag = "TrinketESPToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
         for i,v in workspace.Thrown:GetChildren() do
@@ -95,7 +95,7 @@ local ESPToggle = GameVisualsTab:CreateToggle({
                 end
             end
         end
-        Settings["ESP Settings"]["Trinket ESP"] = Toggle
+        ESPEnabled = Toggle
 	end,
 })
 local ShowCommonToggle = GameVisualsTab:CreateToggle({
