@@ -38,7 +38,7 @@ local ClientTab = Window:CreateTab("Client Cheats", 4483362458)
 
 
 local GameVisualsTab = Window:CreateTab("Game Visuals", 4483362458) 
-local function newTrinketEsp(Trinket, Value)
+function newTrinketEsp(Trinket, Value)
     local TrinketDrawing = Drawing.new("Text")
     TrinketDrawing.Visible = false
     TrinketDrawing.Center = true
