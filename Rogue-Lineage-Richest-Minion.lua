@@ -378,7 +378,7 @@ local UseWebhookToggle = AutomationTab:CreateToggle({
 })
 
 local LogOnScrollToggle = AutomationTab:CreateToggle({
-	Name = "Log On scroll",
+	Name = "Log On Scroll",
 	CurrentValue = Settings["Auto Farms"].LogOnScroll.IsEnabled,
 	Flag = "LogOnScrollToggleeeeeasy", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 	Callback = function(Toggle)
