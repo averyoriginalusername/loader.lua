@@ -40,11 +40,24 @@ GroupBoxes.Left.Autofarm:AddToggle('AutoParryConnection', {
                     return
                 end
 
-                for _,ball in workspace.Balls:GetChildren() do
+                --[[for _,ball in workspace.Balls:GetChildren() do
                     if (Player.Character:FindFirstChild("HumanoidRootPart").Position - ball.Position).magnitude <= 30 then
                         if Player.Character:FindFirstChildOfClass("Highlight") then
                             warn("WITHIN RANGE")
                             keypress(0x46)
+                        end
+                    end
+                end--]]
+
+                for _,something in workspace:GetDescendants() do
+                    if something.Shape == "Ball" then
+                        if something.Parent == workspace.Balls then
+                            if (Player.Character:FindFirstChild("HumanoidRootPart").Position - something.Position).magnitude <= 28 then
+                                if Player.Character:FindFirstChildOfClass("Highlight") then
+                                    warn("WITHIN RANGE")
+                                    keypress(0x46)
+                                end
+                            end
                         end
                     end
                 end
