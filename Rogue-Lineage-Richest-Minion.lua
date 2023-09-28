@@ -1,416 +1,371 @@
+--project rain ui lib
 local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local PlayerBackpack = Player:WaitForChild("Backpack")
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-local CharacterRemotes = Character:WaitForChild("CharacterHandler"):WaitForChild("Remotes")
-local GetRemote = game.ReplicatedStorage.Requests:WaitForChild("Get")
-local Stations = workspace.Stations
-
-local Settings = {
-    ["Client Cheats"] = {
-         ["JumpPower"] = 0;
-         ["HealthDistance"] = 0;
-    };
-    ["Auto Farms"] = {
-        ["PlayerDetectionThreshold"] = 35;
-        ["UseWebhook"] = false;
-        ["LogOnScroll"] = {
-            IsEnabled = false;
-            Scroll = "None";
-        };
-        ["LogOnIllusionist"] = false;
-        ["LogOnModerator"] = false;
-    }
-}
-
-local AmountToCraft = 0
-local CurrentlySelected = "None"
-local PotionRecipes = {
-    ["Health Potion"] = {
-        ["Scroom"] = 2;
-        ["Lava Flower"] = 1;
-    }
-}
-
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({
-	Name = "Multiware: Richest Minion",
-	LoadingTitle = "Loading: Rogue Lineage: Richest Minion...",
-	LoadingSubtitle = "by ???",
-	ConfigurationSaving = {
-		Enabled = true,
-		FolderName = "multiwareConfig",
-		FileName = "mwRLRMConfig"
-	},
-})
-
-local ClientTab = Window:CreateTab("Client Modification", 4483362458) -- Title, Image
-local ClientSection = ClientTab:CreateSection("Client Cheats")
-
--- from poorest minion code
-
-
-local InfJumpConnection = nil
-local InfJumpToggle = ClientTab:CreateToggle({
-	Name = "Infinite Jump",
-	CurrentValue = false,
-	Flag = "InfJumpToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-        local HumanoidRootPart =  game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local UserInputService = game:GetService("UserInputService")
-
-        if Toggle == true then
-            InfJumpConnection = game:GetService("RunService").RenderStepped:Connect(function()
-                local NewBV 
-                while UserInputService:IsKeyDown("Space") do wait()
-                    if not HumanoidRootPart:FindFirstChild("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") then
-                        NewBV = Instance.new("BodyVelocity")
-                        NewBV.Name = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                        NewBV.MaxForce = Vector3.new(0, math.huge, 0)
-                        NewBV.Velocity = Vector3.new(0, Settings["Client Cheats"].JumpPower, 0)
-                        NewBV.Parent = HumanoidRootPart
-                    end
-                end
-                if NewBV then
-                     NewBV:Destroy()
-                end
-            end)
-        elseif Toggle == false then
-            if InfJumpConnection then
-                 InfJumpConnection:Disconnect()
-             end
-        end 
-	end,
-})
-local InfJumpSlider = ClientTab:CreateSlider({
-	Name = "Infinite Jump Power",
-	Range = {0, 150},
-	Increment = 1,
-	Suffix = "Jump Power",
-	CurrentValue = Settings["Client Cheats"].JumpPower,
-	Flag = "JumpPowerSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(SliderValue)
-		Settings["Client Cheats"].JumpPower = SliderValue
-	end,
-})
-
-
-local BlankSection1 = ClientTab:CreateSection("")
-
-local NoFireConnection = nil
-local NoFireToggle = ClientTab:CreateToggle({
-    Name = "No Fire",
-    CurrentValue = false,
-    Flag = "NoFireToggle",
-    Callback = function(Toggle)
-        if Toggle == true then
-            NoFireConnection = game.Players.LocalPlayer.Character.ChildAdded:Connect(function(c)
-                if c.Name == "Burning" and c:IsA("Accessory") then
-                    CharacterRemotes.Dodge:FireServer(0, "normal")
-                end
-            end)
-        elseif Toggle == false then
-            if NoFireConnection then
-                NoFireConnection:Disconnect()
-            end
-        end
-    end,
-})
-local BreakJoints = ClientTab:CreateButton({
-	Name = "Break Joints (Reset)",
-	Callback = function()
-        if Player:FindFirstChild("Danger") then return end
-		Character:BreakJoints()
-	end,
-})
-local NoInjuriesToggle = ClientTab:CreateButton({
-    Name = "No Blindness",
-    Callback = function(Toggle)
-        if Toggle == true then
-            local GetCall = Get:InvokeServer({"Injuries"})
-            if GetCall.Injuries:find("dizzy") then
-                if Lighting.Blur.Visible == true then
-                    Lighting.Blur.Visible = false
-                end
-            end
-        end
-    end,
-})
-
-local GameVisuals = Window:CreateTab("Game Visuals", 4483362458) -- Title, Image
-local ClientSection = GameVisuals:CreateSection("Visuals Cheats")
-
-local healthOnCharacterAdded = nil
-local EyesOfElemira = GameVisuals:CreateToggle({
-	Name = "Eyes Of Elemira",
-	CurrentValue = false,
-	Flag = "EOEToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-        local ToggleHealthView = function(val)
-            for i,v in pairs(workspace.Live:GetDescendants()) do
-                if v:IsA("Model") == true then
-                    local TargetHumanoid = v:FindFirstChild("Humanoid")
-                    if TargetHumanoid then
-                    	TargetHumanoid.HealthDisplayDistance = Settings["Client Cheats"].HealthDistance
-                        TargetHumanoid.HealthDisplayType = val and Enum.HumanoidHealthDisplayType.AlwaysOn or Enum.HumanoidHealthDisplayType.AlwaysOff
-                    end
-                end
-            end
-        end
-        
-        ToggleHealthView(Toggle)
-        healthOnCharacterAdded = workspace.Live.ChildAdded:Connect(function()
-            ToggleHealthView(Toggle)
-        end)
-
-        if Toggle == false then
-            if healthOnCharacterAdded then
-                healthOnCharacterAdded:Disconnect()
-            end
-        end
-	end,
-})
-
-local ViewHealthDistance = GameVisuals:CreateSlider({
-	Name = "View Health Threshold",
-	Range = {0, 150},
-	Increment = 1,
-	Suffix = "Studs",
-	CurrentValue = Settings["Client Cheats"].HealthDistance,
-	Flag = "ViewHealthDistanceSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(SliderValue)
-        Settings["Client Cheats"].HealthDistance = SliderValue
-	end,
-})
-
-local SecurityTab = Window:CreateTab("Security", 4483362458) -- Title, Image
-local NotifierSection = SecurityTab:CreateSection("Notifiers")
-
-local IlluonPlayerAdded = nil
-local IllusionistNotifier = SecurityTab:CreateToggle({
-	Name = "Illusionist Notifier",
-	CurrentValue = false,
-	Flag = "IllusionistNotifier", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-        local NotifyIllu = function(TargetPlayer)
-            local TargetBackpack = TargetPlayer:WaitForChild("Backpack")
-            local TargetCharacter = TargetPlayer.Character or TargetPlayer.CharacterAdded:Wait()
-
-            if TargetBackpack:FindFirstChild("Observe") or TargetCharacter:FindFirstChild("Observe") then
-                Rayfield:Notify({
-                    Title = TargetPlayer.Name.." has Observe!",
-                    Content = TargetPlayer.Name.." is an illusionist.",
-                    Duration = 1e9,
-                    Image = 4483362458,
-                    Actions = { -- Notification Buttons
-                        Ignore = {
-                          Name = "Alright"
-                        },
-                    },
-                 })
-            end
-        end
-        
-        if Toggle == true then
-            for i,rplayer in next, game.Players:GetChildren() do
-                print(rplayer)
-                NotifyIllu(rplayer)
-            end
-            IlluonPlayerAdded = game.Players.PlayerAdded:Connect(function(Player)
-                NotifyIllu(Player)
-            end)
-        elseif Toggle == false then
-            if IlluonPlayerAdded then 
-                IlluonPlayerAdded:Disconnect()
-                print"disconnected"
-            end
-        end
-    end,
-})
-
-local SpecNotifierConnection = nil
-local SpecNotifierToggle = SecurityTab:CreateToggle({
-	Name = "Spec User Notifier",
-	CurrentValue = false,
-	Flag = "SpecNotifier", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-        local NotifySpec = function(TargetPlayer)
-            local TargetBackpack = TargetPlayer:WaitForChild("Backpack")
-            local TargetCharacter = TargetPlayer.Character or TargetPlayer.CharacterAdded:Wait()
-
-            local specTable = {}
-
-            for i,v in pairs(TargetBackpack:GetChildren()) do
-                  if v:IsA("Tool") == true then
-                     if v:FindFirstChild("SpecialSkill") then
-                         table.insert(specTable, v.Name)
-                    end
-               end
-            end
-            
-            if #specTable > 0 then
-                Rayfield:Notify({
-                    Title = TargetPlayer.Name.." has specs!",
-                    Content =  TargetPlayer.Name.."has: "..table.concat(specTable, ", "),
-                    Duration = 1e9,
-                    Image = 4483362458,
-                    Actions = { -- Notification Buttons
-                        Ignore = {
-                            Name = "Alright"
-                        },
-                    },
-                })
-                specTable = {}
-            end
-        end
-        
-        if Toggle == true then
-            for i,rplayer in next, game.Players:GetChildren() do
-                NotifySpec(rplayer)
-            end
-            SpecNotifierConnection = game.Players.PlayerAdded:Connect(function(Player)
-                NotifySpec(Player)
-            end)
-        elseif Toggle == false then
-            if SpecNotifierConnection then 
-                SpecNotifierConnection:Disconnect()
-            end
-        end
-    end,
-})
-
-
-local AutomationTab = Window:CreateTab("Automation", 4483362458) -- Title, Image
-local NotifierSection = AutomationTab:CreateSection("Gacha Autofarm")
-
 local HttpService = game:GetService("HttpService")
-function GetWebhookOwner()
-	if not Settings["Auto Farms"].UseWebhook then return end
-    if not getgenv().DiscordWebhook then return end
-	return HttpService:JSONDecode(HttpService:GetAsync(DiscordWebhook))["user"]["username"] or "here"
+local TweenService = game:GetService("TweenService")
+
+local Library = loadstring(game:HttpGet("https://github.com/averyoriginalusername/lib/raw/main/Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet('https://github.com/averyoriginalusername/lib/raw/main/ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet('https://github.com/averyoriginalusername/lib/raw/main/SaveManager.lua'))()
+
+local ExternalSettings = {
+    Webhook = readfile("lightage/webhooks/rlrmgachawebhook.txt") or "NONE",
+    AutofarmWebhookSettings = {
+        UseWebhook = false,
+        PingHere = false,
+    },
+    SelectedScrolls = true
+}
+
+if not isfile("workspace/lightage/rogue-lineage-richest-minion/bots") then
+    makefolder("lightage/rogue-lineage-richest-minion/bots")
 end
-function SendMessageAsync(Message)
-	if not Settings["Auto Farms"].UseWebhook then return end
-    if not getgenv().DiscordWebhook then return end
-	HttpService:PostAsync(DiscordWebhook or "", HttpService:JSONEncode({["content"] = Message}))
+local Window = Library:CreateWindow({
+    Title = 'lightage.cc',
+    Center = true, 
+    AutoShow = true,
+})
+
+local Tabs = {
+    Main = Window:AddTab('Main'),
+    Autofarm = Window:AddTab('Autofarm'),
+    Settings = Window:AddTab('Settings'),
+}
+
+local GroupBoxes = {
+    Left = {
+        Autofarm = Tabs.Autofarm:AddLeftGroupbox('Gacha Autofarm')
+    },
+    Right = {
+        Bots = Tabs.Autofarm:AddRightGroupbox('Bots')
+    }
+}
+
+local function SendDiscordRequest(Message)
+    if ExternalSettings.AutofarmWebhookSettings.UseWebhook == false then return end
+    local Response = syn and syn.request or request
+    Response({
+        Url = ExternalSettings.Webhook,
+        Method = "POST",
+        Headers = {
+            ['Content-Type'] = 'application/json'
+        },
+        Body = HttpService:JSONEncode({
+            ["content"] = Message
+        })
+    })
 end
 
-local GachaFarmConnection = nil
-local GachaFarmToggle
-local E = false
-GachaFarmToggle = AutomationTab:CreateToggle({
-	Name = "Autofarm Gacha",
-	CurrentValue = false,
-	Callback = function(Toggle)
-        local CanGacha = function()
-            local wawawawawa = game:GetService("ReplicatedStorage").Requests.Get:InvokeServer({"DaysSurvived", "LastGacha", "Silver"})
-            local DaysSurvived =  wawawawawa.DaysSurvived
-            local LastGacha = wawawawawa.LastGacha
-            local Silver = wawawawawa.Silver
+local GachaAutoFarmConnection
+GroupBoxes.Left.Autofarm:AddToggle('GachaAutofarm', {
+    Text = 'Enable Autofarm Gacha',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Enables the gacha autofarm', -- Information shown when you hover over the toggle
+
+    Callback = function(Toggle)
+        local Action = false
+
+        local function GachaStatus()
+            local Get = game:GetService("ReplicatedStorage").Requests.Get:InvokeServer({"DaysSurvived", "LastGacha", "Silver"})
+
+            local DaysSurvived = Get.DaysSurvived
+            local LastGacha = Get.LastGacha
+            local Silver = Get.Silver
 
             if DaysSurvived ~= LastGacha and Silver >= 250 then
-                print"can gacha"
                 return true
+            elseif DaysSurvived ~= LastGacha and Silver < 250 then
+                return "nosilver"
             end
             return false
         end
 
+        if Toggle == true then 
+            GachaAutoFarmConnection = game:GetService("RunService").RenderStepped:Connect(function()
+                if Action then 
+                    return 
+                end
+                if GachaStatus() == "nosilver" then
+                     return Library:Notify("Not enough silver", 1e9), GachaAutoFarmConnection:Disconnect(), Toggles.GachaAutofarm:SetValue(false)
+                end
+
+                if GachaStatus() == true then
+                    Action = true;
+                    do
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.NPCs.Xenyari.HumanoidRootPart.CFrame
+                        wait(.2)
+                        fireclickdetector(workspace.NPCs.Xenyari.ClickDetector)
+                        wait(.25)
+                        local args = {[1] = {["choice"] = "Sure, I'll pay."}}
+                        game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
+                        wait(.25)
+                        args = {[1]={["exit"] = true}}
+                        game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
+                        wait(2)
+                    end;
+                    Action = false;
+                end
+            end)
+        else
+            GachaAutoFarmConnection:Disconnect()
+        end
+    end
+})
+
+local ScrollAddedConnection
+GroupBoxes.Left.Autofarm:AddToggle("UseWebhook", {
+    Text = 'Use Webhook',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Use the webhook when you get a new scroll', -- Information shown when you hover over the toggle
+
+    Callback = function(Toggle)
+        ExternalSettings.AutofarmWebhookSettings.UseWebhook = Toggle
         if Toggle == true then
-            GachaFarmConnection = game:GetService("RunService").RenderStepped:Connect(function()
-                game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(scroll)
-                    if scroll.Name:match("Scroll") then
-                        SendMessageAsync("rolled: "..scroll.Name)
-                    end
-                    if scroll.Name:match(tostring(Settings["Auto Farms"].LogOnScroll.Scroll)) then
-                        GachaFarmToggle:Set(false)
-                        game.Players.LocalPlayer:Kick("Obtained: "..tostring(Settings["Auto Farm"].LogOnScroll.Scroll))
-                        GachaFarmConnection:Disconnect()
-                    end
-                end)
-                if E == false then
-                    if CanGacha() == true then
-                        repeat
-                            E = true
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.NPCs.Xenyari.HumanoidRootPart.CFrame
-                            wait(.2)
-                            fireclickdetector(workspace.NPCs.Xenyari.ClickDetector)
-                            wait(.25)
-                            local args = {[1] = {["choice"] = "Sure, I'll pay."}}
-                            game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
-                            wait(.25)
-                            args = {[1]={["exit"] = true}}
-                            game:GetService("ReplicatedStorage").Requests.Dialogue:FireServer(unpack(args))
-                            wait(2)
-                            E = false
-                        until CanGacha() == false
+            ScrollAddedConnection = Player:FindFirstChild("Backpack").ChildAdded:Connect(function(Child)
+                if Child.Name:match("Scroll of") then
+                    if ExternalSettings.AutofarmWebhookSettings.PingHere == true then
+                        SendDiscordRequest("@here rolled: "..Child.Name)
+                        return
+                    else
+                        SendDiscordRequest("rolled: "..Child.Name)
+                        return
                     end
                 end
             end)
-        elseif Toggle == false then
-            if GachaFarmConnection then
-                GachaFarmConnection:Disconnect()
-            end
+        else
+            ScrollAddedConnection:Disconnect()
+        end
+    end
+})
+
+GroupBoxes.Left.Autofarm:AddToggle("PingHereOnScroll", {
+    Text = 'Ping Here On Scroll',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Ping @here on scroll', -- Information shown when you hover over the toggle
+
+    Callback = function(Toggle)
+        ExternalSettings.AutofarmWebhookSettings.PingHere = Toggle
+    end
+})
+
+
+GroupBoxes.Left.Autofarm:AddInput('WebhookInput', {
+    Default = '',
+    Numeric = false, -- true / false, only allows numbers
+    Finished = false, -- true / false, only calls callback when you press enter
+
+    Text = 'Webhook',
+    Tooltip = 'Enter Webhook; leave/make blank if none.', -- Information shown when you hover over the textbox
+
+    Placeholder = '', -- placeholder text when the box is empty
+    -- MaxLength is also an option which is the max length of the text
+
+    Callback = function(Value)
+        print(Value)
+        ExternalSettings.Webhook = tostring(Value)
+    end
+})
+
+local SaveWebhookButton = GroupBoxes.Left.Autofarm:AddButton({
+    Text = 'Save Webhook',
+    DoubleClick = false,
+    Tooltip = 'Save the webhook',
+    Func = function()
+        if not isfile("workspace/lightage/webhooks") then
+            makefolder("lightage/webhooks")
+        end
+        
+        if ExternalSettings.Webhook:match("discord.com/api/webhooks") then
+            writefile("lightage/webhooks/rlrmgachawebhook.txt", ExternalSettings.Webhook)
+            return Library:Notify("Webhook saved! The next time you open the script, it will not load to the textbox.\n Check workspace/lightage/webhooks (look for the game name) and see if it has saved.\n (or alternatively press check webhook button)", 1e9)
+        else
+            return Library:Notify("Not a valid webhook URL")
         end
     end,
 })
 
-local NotifierSection = AutomationTab:CreateSection("Gacha Autofarm (Settings)")
-
-
-local PlayerDetectionThresholdSlider = AutomationTab:CreateSlider({
-	Name = "Player Detection Threshold (not working rn will fix later)",
-	Range = {0, 150},
-	Increment = 1,
-	Suffix = "Studs",
-	CurrentValue = Settings["Auto Farms"].PlayerDetectionThreshold,
-	Flag = "PlayerDetectionThresholdAF", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(SliderValue)
-        Settings["Auto Farms"].PlayerDetectionThreshold = SliderValue
-	end,
+local CheckForWebhook = GroupBoxes.Left.Autofarm:AddButton({
+    Text = 'Check For Webhook',
+    DoubleClick = false,
+    Tooltip = 'Check if you have your webhook saved',
+    Func = function()
+        if isfile("workspace/lightage/webhooks/rlrmgachawebhook") then
+            return Library:Notify("Webhook data exists", 5)
+        else
+            return Library:Notify("No webhook data", 5)
+        end
+    end,
 })
 
-local UseWebhookToggle = AutomationTab:CreateToggle({
-	Name = "Use Webhook",
-	CurrentValue = false,
-	Flag = "UseWebhookTOGGLE", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-       Settings["Auto Farms"].UseWebhook = Toggle
-	end,
+local SendTestPost = GroupBoxes.Left.Autofarm:AddButton({
+    Text = 'Send Test Message',
+    DoubleClick = false,
+    Tooltip = 'Send a test message',
+    Func = function()
+        SendDiscordRequest("This is a test message")
+    end,
 })
 
-local LogOnScrollToggle = AutomationTab:CreateToggle({
-	Name = "Log On Scroll",
-	CurrentValue = Settings["Auto Farms"].LogOnScroll.IsEnabled,
-	Flag = "LogOnScrollToggleeeeeasy", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-       Settings["Auto Farms"].LogOnScroll.IsEnabled = Toggle
-	end,
+local SelectedPath = nil
+local PathTable = {}
+
+local HasStarted = false
+local StopCreating = false
+local PlayingPath = false
+
+local Speed = 5
+local Wait = 5
+
+local BotFiles = {"--"} do
+    local botfileslist = listfiles("lightage/rogue-lineage-richest-minion/bots")
+
+    for i = 1, #botfileslist do
+        local file = botfileslist[i]
+        if file:split(".")[2]:match("json") then
+            BotFiles[i] = file:split("/")[3]
+        end
+    end
+end
+
+setmetatable(BotFiles, {__newindex = function(t,k,v) rawset(t,k.v) end,})
+
+local NewPathName = ""
+GroupBoxes.Right.Bots:AddInput('PathName', {
+    Default = '',
+    Numeric = false, -- true / false, only allows numbers
+    Finished = false, -- true / false, only calls callback when you press enter
+
+    Text = 'Path Name',
+    Tooltip = 'create a pathn mae', -- Information shown when you hover over the textbox
+
+    Placeholder = 'e.g path1', -- placeholder text when the box is empty
+    -- MaxLength is also an option which is the max length of the text
+
+    Callback = function(Value)
+        NewPathName = Value
+    end
 })
 
-local LogOnModJoin = AutomationTab:CreateToggle({
-	Name = "Log On Moderator Join",
-	CurrentValue = Settings["Auto Farms"].LogOnModerator,
-	Flag = "LogOnModJoinToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-       Settings["Auto Farms"].LogOnModerator = Toggle
-	end,
+GroupBoxes.Right.Bots:AddDropdown('SavedPaths', {
+    Values = BotFiles or {},
+    Default = 1, -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+
+    Text = 'Saved Paths',
+    Tooltip = 'Bot Paths', -- Information shown when you hover over the dropdown
+
+    Callback = function(Value)
+        SelectedPath = Value
+    end
 })
 
-local LogOnModJoin = AutomationTab:CreateToggle({
-	Name = "Log On Illusionist Join",
-	CurrentValue = Settings["Auto Farms"].LogOnIllusionist,
-	Flag = "LogOnModJoinToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Toggle)
-       Settings["Auto Farms"].LogOnIllusionist = Toggle
-	end,
+local CreateNewPath = GroupBoxes.Right.Bots:AddButton({
+    Text = 'Create Path',
+    DoubleClick = false,
+    Tooltip = 'Create a new bot path',
+    Func = function()
+        if NewPathName ~= "" then
+            writefile("lightage/rogue-lineage-richest-minion/bots/"..NewPathName..".json", HttpService:JSONEncode(PathTable))
+            Library:Notify("Created: "..NewPathName..".json", 5)
+        else
+            Library:Notify("Name cannot be blank", 5)
+        end
+    end,
 })
 
-local LogOnScrollDropdown = AutomationTab:CreateDropdown({
-	Name = "Select Scroll",
-	Options = {"None","Scroll of Snarvindur","Scroll of Hoppa","Scroll of Percutiens","Scroll of Fimbulvetr","Scroll of Manus Dei","Scroll of Nocere","Scroll of Telorum","Scroll of Tenebris"},
-	CurrentOption = Settings["Auto Farms"].LogOnScroll.Scroll,
-	Flag = "LogOnScrollDropdownez", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-	Callback = function(Option)
-        Settings["Auto Farms"].LogOnScroll.Scroll = Option
-	end,
+local LoadPath = GroupBoxes.Right.Bots:AddButton({
+    Text = 'Load Path',
+    DoubleClick = false,
+    Tooltip = 'Load selected path',
+    Func = function()
+        if SelectedPath ~= nil then
+            PlayingPath = true
+            local PathContents = readfile("lightage/rogue-lineage-richest-minion/"..SelectedPath)
+            local Decoded = HttpService:JSONDecode(PathContents)
+            
+            local CurrentTween
+            for i = 1, #Decoded do
+                print(Decoded[i].Position)
+                CurrentTween = TweenService:Create(Player.Character.HumanoidRootPart, TweenInfo.new(Decoded[i].CharSpeed, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {Position = Decoded[i].Position})
+                CurrentTween:Play()
+                CurrentTween.Completed:Connect(function() 
+                    task.wait(Decoded[i].Wait)
+                end)
+            end
+            Library:Notify("Path Completed", 5)
+        end
+    end,
 })
+
+
+local BeginCreatingPath = GroupBoxes.Right.Bots:AddButton({
+    Text = 'Begin Creating Path',
+    DoubleClick = false,
+    Tooltip = 'begin creationg a path',
+    Func = function()
+        if HasStarted then return end
+        HasStarted = true
+        return Library:Notify("Behun", 3)
+    end,
+})
+
+local FinishCreatingPath = GroupBoxes.Right.Bots:AddButton({
+    Text = 'Finish Creating Path',
+    DoubleClick = false,
+    Tooltip = 'begin creationg a path',
+    Func = function()
+        if HasStarted == false then
+            return Library:Notify("You aren't recording", 3)
+        end
+        HasStarted = false
+        return Library:Notify("Finished recording path", 3)
+    end,
+})
+
+local DiscardRecordingPath = GroupBoxes.Right.Bots:AddButton({
+    Text = 'Discard Path',
+    DoubleClick = false,
+    Tooltip = 'Discard the current recording',
+    Func = function()
+        return PathRecordingConnection:Disconnect(), HasStarted == false, StopCreating == true, Pause == false
+    end,
+})
+
+GroupBoxes.Right.Bots:AddSlider('WaitSlider', {Text = 'Wait',  Default = 1,Min = 1, Max = 15,Rounding = 1,Compact = false,Callback = function(Value)Wait = Value;end})
+GroupBoxes.Right.Bots:AddSlider('SpeedSlider', {Text = 'Speed',Default = 1,Min = 1,Max = 5, Rounding = 1,Compact = false,Callback = function(Value)Speed = Value;end})
+
+local AddPoint = GroupBoxes.Right.Bots:AddButton({
+    Text = 'Add Point',
+    DoubleClick = false,
+    Tooltip = 'Add a point',
+    Func = function()
+       if HasStarted == true then
+            return Library:Notify("Added a point", 3), table.insert(PathTable, {WaitTime = Wait, CharSpeed = Speed, Position = Player.Character:FindFirstChild("HumanoidRootPart").Position})
+       else
+            return Library:Notify("You aren't recording", 3)
+       end
+    end,
+})
+-- lib stuff
+Library:SetWatermarkVisibility(true)
+Library:SetWatermark('YOU ARE RUNNING: v1')
+
+Library:OnUnload(function()
+    print('Unloaded!')
+    Library.Unloaded = true
+end)
+
+local MenuGroup = Tabs.Settings:AddLeftGroupbox('Menu')
+MenuGroup:AddButton('Unload', function() Library:Unload() end) 
+MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'Insert', NoUI = true, Text = 'Menu keybind' }) 
+Library.ToggleKeybind = Options.MenuKeybind -- Allows you to have a custom keybind for the menu
+
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+
+SaveManager:IgnoreThemeSettings() 
+SaveManager:SetIgnoreIndexes({'MenuKeybind'}) 
+SaveManager:SetFolder('lightage')
+SaveManager:SetFolder('lightage/rogue-lineage-richest-minion')
+
+SaveManager:BuildConfigSection(Tabs.Settings) 
+ThemeManager:ApplyToTab(Tabs.Settings)
