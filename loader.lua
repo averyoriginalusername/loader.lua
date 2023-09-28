@@ -3,6 +3,7 @@ local HttpLink do
 	local GameList = {
 		[13747403394] =  game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua');
 		[7162704734] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Fighting-Game.lua');
+		[13772394625] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Blade-Ball.lua');
 	}
 	local ClientHWID = nil
 	local CheckExecutor = function(Table)
