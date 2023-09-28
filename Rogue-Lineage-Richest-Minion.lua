@@ -7,6 +7,7 @@ local Library = loadstring(game:HttpGet("https://github.com/averyoriginalusernam
 local ThemeManager = loadstring(game:HttpGet('https://github.com/averyoriginalusername/lib/raw/main/ThemeManager.lua'))()
 local SaveManager = loadstring(game:HttpGet('https://github.com/averyoriginalusername/lib/raw/main/SaveManager.lua'))()
 
+local Connections = {}; Connections.__index = Connections
 local ExternalSettings = {
     Webhook = readfile("lightage/webhooks/rlrmgachawebhook.txt") or "NONE",
     AutofarmWebhookSettings = {
@@ -19,6 +20,7 @@ local ExternalSettings = {
 if not isfile("workspace/lightage/rogue-lineage-richest-minion/bots") then
     makefolder("lightage/rogue-lineage-richest-minion/bots")
 end
+
 local Window = Library:CreateWindow({
     Title = 'lightage.cc',
     Center = true, 
@@ -33,12 +35,25 @@ local Tabs = {
 
 local GroupBoxes = {
     Left = {
-        Autofarm = Tabs.Autofarm:AddLeftGroupbox('Gacha Autofarm')
+        CharacterTab = Tabs.Main:AddLeftGroupbox('Character'),
+        Autofarm = Tabs.Autofarm:AddLeftGroupbox('Gacha Autofarm'),
     },
     Right = {
-        Bots = Tabs.Autofarm:AddRightGroupbox('Bots')
+        Bots = Tabs.Autofarm:AddRightGroupbox('Bots'),
     }
 }
+
+GroupBoxes.Left.CharacterTab:AddToggle('NoClipToggle', {
+    Text = 'Enable Noclip',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Enables noclip', -- Information shown when you hover over the toggle
+
+    Callback = function(Toggle)
+        Connections.NoclipConnection = game:GetService("RunService").RenderStepped:Connect(function()
+            print("hi")
+        end)
+    end
+})
 
 local function SendDiscordRequest(Message)
     if ExternalSettings.AutofarmWebhookSettings.UseWebhook == false then return end
