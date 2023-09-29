@@ -578,4 +578,4 @@ SaveManager:SetFolder('lightage/rogue-lineage-richest-minion')
 SaveManager:BuildConfigSection(Tabs.Settings) 
 ThemeManager:ApplyToTab(Tabs.Settings)
 
-Tabs.Settings:AddRightGroupbox('Debug'):AddButton('Clear All Connections', function() Connections:ClearAllCurrent() end) 
+Tabs.Settings:AddRightGroupbox('Debug'):AddButton('Clear All Connections', function() Connections:ClearAllCurrent() end)
