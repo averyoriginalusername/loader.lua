@@ -7,7 +7,7 @@ function Connections.new()
     return self
 end
 
-function Connections:Create(flag, _ConnectionFunc)
+function Connections:Conn(flag, _ConnectionFunc)
     table.insert(self.list, {flag = flag, connection = _ConnectionFunc})
 end
 
