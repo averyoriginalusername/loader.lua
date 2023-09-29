@@ -21,3 +21,5 @@ function Connections:Disconnect(connection)
     end
     return false
 end
+
+return Connections
