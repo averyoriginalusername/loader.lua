@@ -8,6 +8,7 @@ function Connections.new()
 end
 
 function Connections:Conn(flag, _ConnectionFunc)
+    if self.list[flag] then return end
     table.insert(self.list, {flag = flag, connection = _ConnectionFunc})
 end
 
