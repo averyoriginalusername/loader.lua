@@ -6,17 +6,26 @@ local TweenService = game:GetService("TweenService")
 local Library = loadstring(game:HttpGet("https://github.com/averyoriginalusername/lib/raw/main/Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet('https://github.com/averyoriginalusername/lib/raw/main/ThemeManager.lua'))()
 local SaveManager = loadstring(game:HttpGet('https://github.com/averyoriginalusername/lib/raw/main/SaveManager.lua'))()
+local ConnectionHandler = loadstring(game:HttpGet('https://github.com/averyoriginalusername/main/raw/main/ConnectionManager.lua'))()
 
-local Connections = {}; Connections.__index = Connections
+local Connections = ConnectionHandler.new()
 local ExternalSettings = {
     Webhook = readfile("lightage/webhooks/rlrmgachawebhook.txt") or "NONE",
     AutofarmWebhookSettings = {
         UseWebhook = false,
         PingHere = false,
     },
-    SelectedScrolls = true
+    SelectedScrolls = true,
+    DisableInWater = false,
+    JumpPower = 0,
+    Speed = 0,
+    NoFallDamage = false
 }
-
+local KeybindBooleans = {
+    Walkspeed = false
+    Noclip = false
+    InfiniteJump = false
+}
 if not isfile("workspace/lightage/rogue-lineage-richest-minion/bots") then
     makefolder("lightage/rogue-lineage-richest-minion/bots")
 end
@@ -30,6 +39,7 @@ local Window = Library:CreateWindow({
 local Tabs = {
     Main = Window:AddTab('Main'),
     Autofarm = Window:AddTab('Autofarm'),
+    Keybinds = Window:AddTab('Keybinds'),
     Settings = Window:AddTab('Settings'),
 }
 
@@ -37,11 +47,88 @@ local GroupBoxes = {
     Left = {
         CharacterTab = Tabs.Main:AddLeftGroupbox('Character'),
         Autofarm = Tabs.Autofarm:AddLeftGroupbox('Gacha Autofarm'),
+        CharacterKeybinds = Tabs.Keybinds:AddLeftGroupbox('Character'),
     },
     Right = {
         Bots = Tabs.Autofarm:AddRightGroupbox('Bots'),
     }
 }
+
+local old
+old = hookfunction(Instance.new("RemoteEvent").FireServer, newcclosure(function(self, ...)
+    if not checkcaller() then
+        if self.Name == "ApplyFallDamage" and ExternalSettings.NoFallDamage then
+            return
+        end
+    end
+    return old(self, ...)
+end))
+
+local OldWalkspeed = Player.Character:FindFirstChild("Humanoid").WalkSpeed
+GroupBoxes.Left.CharacterTab:AddToggle('WalkspeedToggle', {
+    Text = 'Enable Walkspeed',
+    Default = false,
+    Tooltip = 'enables walkspeed',
+
+    Callback = function(Toggle)
+        print(Toggle)
+        if Toggle == true then
+            Connections:Conn("WalkSpeedConnection", game:GetService("RunService").RenderStepped:Connect(function()
+                Player.Character:FindFirstChild("Humanoid").WalkSpeed = ExternalSettings.Speed
+            end))
+        else
+            if Connections:Disconnect("WalkSpeedConnection") then
+                Player.Character:FindFirstChild("Humanoid").WalkSpeed = OldWalkspeed
+            end
+        end
+    end
+})
+
+GroupBoxes.Left.CharacterTab:AddSlider('WalkspeedSlider', {Text = 'Walkspeed',  Default = 1,Min = 1, Max = 200,Rounding = 1,Compact = false,Callback = function(Value)ExternalSettings.Speed = Value;end})
+
+GroupBoxes.Left.CharacterTab:AddToggle('InfiniteJumpToggle', {
+    Text = 'Enable Infinite Jump',
+    Default = false,
+    Tooltip = 'enables inf jump',
+
+    Callback = function(_)
+        KeybindBooleans.InfiniteJump = not KeybindBooleans.InfiniteJump
+
+        if KeybindsBooleans.InfiniteJump == true then
+            local HumanoidRootPart =  game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local UserInputService = game:GetService("UserInputService")     
+            Connections:Conn("InfJumpConnection", game:GetService("RunService").RenderStepped:Connect(function()
+                local NewBV 
+                while UserInputService:IsKeyDown("Space") do wait()
+                    if not HumanoidRootPart:FindFirstChild(".") then
+                        NewBV = Instance.new("BodyVelocity")
+                        NewBV.Name = "."
+                        NewBV.MaxForce = Vector3.new(0, math.huge, 0)
+                        NewBV.Velocity = Vector3.new(0, ExternalSettings.JumpPower, 0)
+                        NewBV.Parent = HumanoidRootPart
+                    end
+                end
+                if NewBV then
+                     NewBV:Destroy()
+                end
+            end))
+        elseif KeybindsBooleans.InfiniteJump == false then
+            Connections:Disconnect("InfJumpConnection")
+        end
+    end
+})
+
+GroupBoxes.Left.CharacterTab:AddSlider('InfiniteJumpSlider', {Text = 'Jump Power',  Default = 1,Min = 1, Max = 150,Rounding = 1,Compact = false,Callback = function(Value)ExternalSettings.JumpPower = Value;end})
+
+GroupBoxes.Left.CharacterTab:AddToggle('NoFallDamageToggle', {
+    Text = 'Enable No Fall Damage',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Enables no fall damage', -- Information shown when you hover over the toggle
+
+    Callback = function(Toggle)
+        ExternalSettings.NoFallDamage = Toggle
+    end
+})
 
 GroupBoxes.Left.CharacterTab:AddToggle('NoClipToggle', {
     Text = 'Enable Noclip',
@@ -49,9 +136,117 @@ GroupBoxes.Left.CharacterTab:AddToggle('NoClipToggle', {
     Tooltip = 'Enables noclip', -- Information shown when you hover over the toggle
 
     Callback = function(Toggle)
-        Connections.NoclipConnection = game:GetService("RunService").RenderStepped:Connect(function()
-            print("hi")
-        end)
+        if Toggle then
+            Connections:Conn("NoclipConnection", game:GetService("RunService").RenderStepped:Connect(function()
+                if not Player.Character then
+                    return
+                end
+                
+                for i,v in Player.Character:GetChildren() do
+                    if v:IsA("BasePart") == true then
+                        v.CanCollide = false
+                    end
+                end
+            end))
+        else
+            if Connections:Disconnect("NoclipConnection") then
+                Player.Character.Torso.CanCollide = true
+            end
+        end
+    end
+})
+
+GroupBoxes.Left.CharacterTab:AddToggle('DisableInWater', {
+    Text = 'Disable In Water',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'disable when in water', -- Information shown when you hover over the toggle
+
+    Callback = function(Toggle)
+        ExternalSettings.DisableInWater = toggle
+    end
+})
+
+GroupBoxes.Left.CharacterKeybinds:AddLabel('Walkspeed'):AddKeyPicker('WalkspeedKeybind', {
+    -- SyncToggleState only works with toggles.
+    -- It allows you to make a keybind which has its state synced with its parent toggle
+
+    -- Example: Keybind which you use to toggle flyhack, etc.
+    -- Changing the toggle disables the keybind state and toggling the keybind switches the toggle state
+
+    Default = 'F1', -- String as the name of the keybind (MB1, MB2 for mouse buttons)
+    SyncToggleState = false,
+
+
+    -- You can define custom Modes but I have never had a use for it.
+    Mode = 'Toggle', -- Modes: Always, Toggle, Hold
+
+    Text = 'Noclip Keybind', -- Text to display in the keybind menu
+    NoUI = false, -- Set to true if you want to hide from the Keybind menu,
+
+    -- Occurs when the keybind is clicked, Value is `true`/`false`
+    Callback = function(Value)
+        Toggles.WalkspeedToggle:SetValue(Value)
+    end,
+
+    -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
+    ChangedCallback = function(New)
+        print('[cb] Keybind changed!', New)
+    end
+})
+
+GroupBoxes.Left.CharacterKeybinds:AddLabel('Noclip'):AddKeyPicker('NoClipToggle', {
+    -- SyncToggleState only works with toggles.
+    -- It allows you to make a keybind which has its state synced with its parent toggle
+
+    -- Example: Keybind which you use to toggle flyhack, etc.
+    -- Changing the toggle disables the keybind state and toggling the keybind switches the toggle state
+
+    Default = 'F2', -- String as the name of the keybind (MB1, MB2 for mouse buttons)
+    SyncToggleState = false,
+
+
+    -- You can define custom Modes but I have never had a use for it.
+    Mode = 'Toggle', -- Modes: Always, Toggle, Hold
+
+    Text = 'Noclip Keybind', -- Text to display in the keybind menu
+    NoUI = false, -- Set to true if you want to hide from the Keybind menu,
+
+    -- Occurs when the keybind is clicked, Value is `true`/`false`
+    Callback = function(Value)
+        Toggles.NoClipToggle:SetValue(Value)
+    end,
+
+    -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
+    ChangedCallback = function(New)
+        print('[cb] Keybind changed!', New)
+    end
+})
+
+GroupBoxes.Left.CharacterKeybinds:AddLabel('Infinite Jump'):AddKeyPicker('InfiniteJumpKeybind', {
+    -- SyncToggleState only works with toggles.
+    -- It allows you to make a keybind which has its state synced with its parent toggle
+
+    -- Example: Keybind which you use to toggle flyhack, etc.
+    -- Changing the toggle disables the keybind state and toggling the keybind switches the toggle state
+
+    Default = 'F3', -- String as the name of the keybind (MB1, MB2 for mouse buttons)
+    SyncToggleState = false,
+
+
+    -- You can define custom Modes but I have never had a use for it.
+    Mode = 'Toggle', -- Modes: Always, Toggle, Hold
+
+    Text = 'Noclip Keybind', -- Text to display in the keybind menu
+    NoUI = false, -- Set to true if you want to hide from the Keybind menu,
+
+    -- Occurs when the keybind is clicked, Value is `true`/`false`
+    Callback = function(Value)
+        Toggles.InfiniteJumpToggle:SetValue(Value)
+    end,
+
+    -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
+    ChangedCallback = function(New)
+        print('[cb] Keybind changed!', New)
     end
 })
 
@@ -70,7 +265,6 @@ local function SendDiscordRequest(Message)
     })
 end
 
-local GachaAutoFarmConnection
 GroupBoxes.Left.Autofarm:AddToggle('GachaAutofarm', {
     Text = 'Enable Autofarm Gacha',
     Default = false, -- Default value (true / false)
@@ -95,7 +289,7 @@ GroupBoxes.Left.Autofarm:AddToggle('GachaAutofarm', {
         end
 
         if Toggle == true then 
-            GachaAutoFarmConnection = game:GetService("RunService").RenderStepped:Connect(function()
+            Connections:Conn("GachaAutofarmConnection", game:GetService("RunService").RenderStepped:Connect(function()
                 if Action then 
                     return 
                 end
@@ -119,14 +313,13 @@ GroupBoxes.Left.Autofarm:AddToggle('GachaAutofarm', {
                     end;
                     Action = false;
                 end
-            end)
+            end))
         else
-            GachaAutoFarmConnection:Disconnect()
+            Connections:Disconnect("GachaAutoFarmConnection")
         end
     end
 })
 
-local ScrollAddedConnection
 GroupBoxes.Left.Autofarm:AddToggle("UseWebhook", {
     Text = 'Use Webhook',
     Default = false, -- Default value (true / false)
@@ -135,7 +328,7 @@ GroupBoxes.Left.Autofarm:AddToggle("UseWebhook", {
     Callback = function(Toggle)
         ExternalSettings.AutofarmWebhookSettings.UseWebhook = Toggle
         if Toggle == true then
-            ScrollAddedConnection = Player:FindFirstChild("Backpack").ChildAdded:Connect(function(Child)
+            Connections:Conn("ScrollAddedConnection", Player:FindFirstChild("Backpack").ChildAdded:Connect(function(Child)
                 if Child.Name:match("Scroll of") then
                     if ExternalSettings.AutofarmWebhookSettings.PingHere == true then
                         SendDiscordRequest("@here rolled: "..Child.Name)
@@ -145,9 +338,9 @@ GroupBoxes.Left.Autofarm:AddToggle("UseWebhook", {
                         return
                     end
                 end
-            end)
+            end))
         else
-            ScrollAddedConnection:Disconnect()
+            Connections:Disconnect("ScrollAddedConnection")
         end
     end
 })
@@ -361,8 +554,8 @@ local AddPoint = GroupBoxes.Right.Bots:AddButton({
     end,
 })
 -- lib stuff
-Library:SetWatermarkVisibility(true)
-Library:SetWatermark('YOU ARE RUNNING: v1')
+--Library:SetWatermarkVisibility(true)
+--Library:SetWatermark('YOU ARE RUNNING: v1')
 
 Library:OnUnload(function()
     print('Unloaded!')
@@ -384,3 +577,5 @@ SaveManager:SetFolder('lightage/rogue-lineage-richest-minion')
 
 SaveManager:BuildConfigSection(Tabs.Settings) 
 ThemeManager:ApplyToTab(Tabs.Settings)
+
+Tabs.Settings:AddRightGroupbox('Debug'):AddButton('Clear All Connections', function() Connections:ClearAllCurrent() end) 
