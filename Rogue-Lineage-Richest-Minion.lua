@@ -22,9 +22,9 @@ local ExternalSettings = {
     NoFallDamage = false
 }
 local KeybindBooleans = {
-    Walkspeed = false
-    Noclip = false
-    InfiniteJump = false
+    Walkspeed = false,
+    Noclip = false,
+    InfiniteJump = false,
 }
 if not isfile("workspace/lightage/rogue-lineage-richest-minion/bots") then
     makefolder("lightage/rogue-lineage-richest-minion/bots")
