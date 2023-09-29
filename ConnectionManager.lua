@@ -22,4 +22,10 @@ function Connections:Disconnect(connection)
     return false
 end
 
+function Connections:ClearAllCurrent()
+    for i,v in pairs(self.list) do
+        table.remove(self.list, i)
+    end
+end
+
 return Connections
