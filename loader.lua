@@ -4,6 +4,13 @@ local HttpLink do
 		[13747403394] =  game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua');
 		[7162704734] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Fighting-Game.lua');
 		[13772394625] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Blade-Ball.lua');
+
+		--TYPE SOUL
+		[14069122388] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
+		[14071822972] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
+		[14069122388] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
+		[14069678431] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
+		[14070029709] = game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Type-Soul.lua');
 	}
 	local ClientHWID = nil
 	local CheckExecutor = function(Table)
