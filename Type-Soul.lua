@@ -46,6 +46,13 @@ local GroupBoxes = {
         ESPSettingsBox = Tabs.ESP:AddRightGroupbox("ESP Settings")
     }
 }
+local PlaceIds = {
+    Hueco = 14069122388,
+    Wanden = 14071822972,
+    LasNoches = 14069122388,
+    Karakura = 14069678431,
+    SoulSociety = 14070029709
+}
 local MonsterTypes = {
     "Menos"; "Frisker"; "Fishbone"
 }
@@ -61,7 +68,7 @@ local function newDrawing()
 end
 
 local function teleportToPlace(plr, part)
-    return plr.Character.HumanoidRootPart.Position == part.Position
+    plr.Character.HumanoidRootPart.Position = part.Position
 end
 
 workspace.Entities.ChildAdded:Connect(function(child)
@@ -228,7 +235,30 @@ GroupBoxes.Left.ESPBox:AddToggle('ToggleHollowMobESP', {
 })
 
 GroupBoxes.Left.FarmingBox:AddToggle('AutoCreateParty', {
-    Text = 'Auto-create Party',
+    Text = 'Adjuchas Notifier',
+    Default = false,
+    Tooltip = 'notifies if adjucha',
+
+    Callback = function(Toggle)
+        local function NotifyAdjuchas(Path)
+            for _,potentialAdjucha in Path:GetChildren() do
+                if potentialAdjucha.ClassName == "Model" then
+                    if potentialAdjucha.Name:match("Adjuc") and potentialAdjucha.Name:match("_") then
+                        Library:Notify("Adjuchas Spawned: "..potentialAdjucha.Name, 600)
+                    end
+                end
+            end
+        end
+
+        NotifyAdjuchas(workspace.Entities)
+        workspace.Entities.ChildAdded:Connect(function(_)
+            NotifyAdjuchas(workspace.Entities)
+        end)
+    end
+})
+
+GroupBoxes.Left.FarmingBox:AddToggle('AutoCreateParty', {
+    Text = 'Auto-Create Party',
     Default = false,
     Tooltip = 'create party auto',
 
@@ -285,7 +315,7 @@ local KillSelfButton = GroupBoxes.Left.PlayerBox:AddButton({
     end,
 })
 
-local TweenToKisuke = GroupBoxes.Right.OthersBox:AddButton({
+local TweenToKisuke = (game.PlaceId == PlaceIds.Karakura) and GroupBoxes.Right.OthersBox:AddButton({
     Text = 'To Kisuke',
     DoubleClick = false,
     Tooltip = 'tween to kisuke (CAN AA GUN)',
@@ -301,26 +331,46 @@ local TweenToKisuke = GroupBoxes.Right.OthersBox:AddButton({
         end
         return
     end,
-})
+}) or nil
 
 --GroupBoxes.Left.OthersBox:AddDivider()
 
-local TPToWanden = game.PlaceId ~= 14071822972 and GroupBoxes.Right.OthersBox:AddButton({
+local TPToWanden = not (game.PlaceId == PlaceIds.Wanden) or not (game.PlaceId == PlaceIds.Hueco) and GroupBoxes.Right.OthersBox:AddButton({
     Text = 'TP To Wanden',
     DoubleClick = false,
     Tooltip = 'tp to wanden',
     Func = function()
-        return
+        local Part = nil
+        if (game.PlaceId == PlaceIds.Karakura) then
+            warn("Karakura")
+            Part = workspace.WandenreichGate:FindFirstChild("WandenGate")
+        end
+
+        return teleportToPlace(game.Players.LocalPlayer, Part)
     end,
 }) or nil
 
-local TPToLasNoches = game.PlaceId == 14069122388 and GroupBoxes.Right.OthersBox:AddButton({
+local TPToLasNoches = (game.PlaceId == PlaceIds.Hueco) and GroupBoxes.Right.OthersBox:AddButton({
     Text = 'TP To Las Noches',
     DoubleClick = false,
-    Tooltip = 'tp to wanden',
+    Tooltip = 'tp to las noches',
     Func = function()
         teleportToPlace(game.Players.LocalPlayer,workspace:FindFirstChild("LasNoches").MenosPit)
         return 
+    end,
+}) or nil
+
+local TPToSoulSociety = not (game.PlaceId == PlaceIds.SoulSociety) or not (game.PlaceId == PlaceIds.Hueco) and GroupBoxes.Right.OthersBox:AddButton({
+    Text = 'TP To Soul Society',
+    DoubleClick = false,
+    Tooltip = 'tp to ss',
+    Func = function()
+        local Part = nil
+        if (game.PlaceId == PlaceIds.Karakura) then
+            Part = workspace.SoulGate:FindFirstChild("SoulGate")
+        end
+
+        return teleportToPlace(game.Players.LocalPlayer, Part)
     end,
 }) or nil
 
