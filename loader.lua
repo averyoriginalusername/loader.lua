@@ -1,4 +1,4 @@
-local _HttpGet = "return print('oops')"
+local _HttpGet = "return warn('no script supported for ur game')"
 local HttpLink do
 	local GameList = {
 		[13747403394] =  game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua');
@@ -30,5 +30,8 @@ local HttpLink do
 		end
 	end
 end
-local s,err=pcall(function()loadstring(_HttpGet)();end)
-if err then warn("err:	"..err);end
+xpcall(function()
+    loadstring(_HttpGet)();
+end,function(err)
+    warn("error, %s"):format(err)
+end)
