@@ -1,4 +1,4 @@
-local _HttpGet = "return warn('no script supported for ur game')"
+local _HttpGet = "return warn('something errored/no script supported for ur game')"
 local HttpLink do
 	local GameList = {
 		[13747403394] =  game:HttpGet('https://raw.githubusercontent.com/averyoriginalusername/main/main/Rogue-Lineage-Richest-Minion.lua');
@@ -30,8 +30,26 @@ local HttpLink do
 		end
 	end
 end
+
 xpcall(function()
-    loadstring(_HttpGet)();
+	local raw_hwids = loadstring(game:HttpGet('https://pastebin.com/raw/zZEdYZ4z', true))();
+	local http_request = syn and syn.request or request;
+	local body = http_request({Url = 'https://httpbin.org/get'; Method = 'GET'}).Body;
+	local decoded = game:GetService('HttpService'):JSONDecode(body)
+	local hwid = decoded.headers
+	
+	for fluxhwid,_ in raw_hwids do
+		if not fluxhwid:match(decoded.headers['Flux-Fingerprint']) then
+			return game:GetService("StarterGui"):SetCore("SendNotification", {
+				Title = "no",
+				Text = "you are not hwid whitelisted ninja",
+				Duration = 5,
+			})
+		else
+			return true, loadstring(_HttpGet)();
+		end
+	end
 end,function(err)
     warn("error, %s"):format(err)
 end)
+--imademoaogasundeiru
