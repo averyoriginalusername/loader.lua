@@ -1,3 +1,4 @@
+print"ye"
 local _HttpGet = "return print('oops')"
 local HttpLink do
 	local GameList = {
