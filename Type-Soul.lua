@@ -1,437 +1,477 @@
---project rain ui lib
-local Player = game.Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
-
-local Library = loadstring(game:HttpGet("https://github.com/averyoriginalusername/lib/raw/main/Library.lua"))()
-local ThemeManager = loadstring(game:HttpGet('https://github.com/averyoriginalusername/lib/raw/main/ThemeManager.lua'))()
-local SaveManager = loadstring(game:HttpGet('https://github.com/averyoriginalusername/lib/raw/main/SaveManager.lua'))()
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 local ConnectionHandler = loadstring(game:HttpGet('https://github.com/averyoriginalusername/main/raw/main/ConnectionManager.lua'))()
 
+local localPlayer = game.Players.LocalPlayer
+local PlayerGui = localPlayer:FindFirstChild("PlayerGui")
 local Connections = ConnectionHandler.new()
-local ExternalSettings = {
+local Window = Fluent:CreateWindow({
+    Title = "lightage",
+    SubTitle = "VERSION 2 (PRIVATE SCRIPT)",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(620, 360),
+    Acrylic = false, 
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+--Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
+local Options = Fluent.Options
+getgenv().ExternalSettings = {
+    WalkSpeed = 0,
     JumpPower = 0,
-    Speed = 0,
-    ESPSettings = {
-        MobESPs = {
-            HollowMobsEnabled = false,
-            ShowHealth = false,
-        },
-        GateESP = false,
-        TextFont = 1,
-        TextSize = 15,
-        ESPColor = Color3.new(1, 1, 1)
-    }
 }
-local Window = Library:CreateWindow({
-    Title = 'lightage.cc',
-    Center = true, 
-    AutoShow = true,
-})
-
 local Tabs = {
-    Main = Window:AddTab('Main'),
-    ESP = Window:AddTab('ESP'),
-    Settings = Window:AddTab('Settings'),
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Automation = Window:AddTab({ Title = "Automation", Icon = ""}),
+    Teleports = Window:AddTab({ Title = "Teleports", Icon = ""}),
+    Keybinds = Window:AddTab({ Title = "Keybinds", Icon = ""--[["layers"]] }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
-local GroupBoxes = {
-    Left = {
-        PlayerBox = Tabs.Main:AddLeftGroupbox('Player'),
-        FarmingBox = Tabs.Main:AddLeftGroupbox('Farming'),
-        ESPBox = Tabs.ESP:AddLeftGroupbox("ESPs"),
-    },
-    Right = {
-        OthersBox = Tabs.Main:AddRightGroupbox('Others'),
-        ESPSettingsBox = Tabs.ESP:AddRightGroupbox("ESP Settings")
-    }
-}
-local PlaceIds = {
-    Hueco = 14069122388,
-    Wanden = 14071822972,
-    LasNoches = 14069122388,
-    Karakura = 14069678431,
-    SoulSociety = 14070029709
-}
-local MonsterTypes = {
-    "Menos"; "Frisker"; "Fishbone"
-}
-local GateESPs,HollowESPs,ShinigamiESPs,ArrancarESPs,PlayerESPs,NPCESPs = {}, {}, {}, {}, {}, {} 
-local function newDrawing()
-    local DrawObj = Drawing.new("Text")
-    DrawObj.Center = true
-    DrawObj.Font = 1
-    DrawObj.Visible = true
-    DrawObj.Outline = true
-	DrawObj.Color = Color3.new(1,1,1)
-    return DrawObj
-end
-
-local function teleportToPlace(plr, part)
-    plr.Character.HumanoidRootPart.Position = part.Position
-end
-
-workspace.Entities.ChildAdded:Connect(function(child)
-    for MonsterType,_ in next, MonsterTypes do
-        if child.ClassName == "Model" and child.Name:match(MonsterType) then
-            HollowESPs[child] = newDrawing()
-            print("newdrawing: ", child.Name)
-        end 
-    end
-end)
-
-workspace.Entities.ChildRemoved:Connect(function(child)
-    for MonsterType,_ in next, MonsterTypes do
-        if child.ClassName == "Model" and child.Name:match(MonsterType) then
-            HollowESPs[child]:Remove(); HollowESPs[child] = nil
-        end 
-    end
-end)
-
-for _,v in next, workspace.Entities:GetChildren() do
-     for MonsterType,_ in next, MonsterTypes do
-        if v.ClassName == "Model" and v.Name:match(MonsterType) then
-            if game.Players:FindFirstChild(v.Name) then continue end
-            HollowESPs[v] = newDrawing()
-        end 
-    end
-end
-
---[[
-Connections:Conn("ESP_PlayerAdded", game.Players.PlayerAdded:Connect(function(plr)
-    if not PlayerESPs[plr] then PlayerESPs[plr] = newDrawing() end
-end)); Connections:Conn("ESP_PlayerRemoving", game.Players.PlayerRemoving:Connect(function(plr)
-    if PlayerESPs[plr] then PlayerESPs[plr]:Remove(); PlayerESPs[plr] = nil end
-end))--]]
-
---[[
-Connections:Conn("ESP_EntityAdded", workspace.Entities.ChildAdded:Connect(function(child)
-    for MonsterType,_ in next, MonsterTypes do
-        if child.ClassName == "Model" and child.Name:match(MonsterType) then
-            HollowESPs[child] = newDrawing()
-            print("newdrawing: ", child.Name)
-        end 
-    end
-end)); Connections:Conn("ESP_EntityRemoved", workspace.Entities.ChildRemoved:Connect(function(child)
-    for MonsterType,_ in next, MonsterTypes do
-        if child.ClassName == "Model" and child.Name:match(MonsterType) then
-            HollowESPs[child]:Remove(); HollowESPs[child] = nil
-        end 
-    end
-end))
---]]
-
---table.foreach(PlayerESPs, warn)
-table.foreach(HollowESPs, warn)
-
-GroupBoxes.Left.PlayerBox:AddToggle('NoClipToggle', {
-    Text = 'Enable Noclip',
-    Default = false, -- Default value (true / false)
-    Tooltip = 'Enables noclip', -- Information shown when you hover over the toggle
-
-    Callback = function(Toggle)
-        if Toggle then
-            Connections:Conn("NoclipConnection", game:GetService("RunService").RenderStepped:Connect(function()
-                if not Player.Character then
-                    return
-                end
-                
-                for i,v in Player.Character:GetChildren() do
-                    if v:IsA("BasePart") == true then
-                        v.CanCollide = false
-                    end
-                end
-            end))
-        else
-            if Connections:Disconnect("NoclipConnection") then
-                Player.Character.Torso.CanCollide = true
-            end
-        end
-    end
-})
-
-local OldWalkspeed = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid").WalkSpeed
-GroupBoxes.Left.PlayerBox:AddToggle('WalkspeedToggle', {
-    Text = 'Enable Walkspeed',
-    Default = false,
-    Tooltip = 'enables walkspeed',
-
-    Callback = function(Toggle)
-        print(Toggle)
-        if Toggle == true then
-            Connections:Conn("WalkSpeedConnection", game:GetService("RunService").RenderStepped:Connect(function()
-                Player.Character:FindFirstChild("Humanoid").WalkSpeed = ExternalSettings.Speed
-            end))
-        else
-            if Connections:Disconnect("WalkSpeedConnection") then
-                Player.Character:FindFirstChild("Humanoid").WalkSpeed = OldWalkspeed
-            end
-        end
-    end
-})
-
-GroupBoxes.Left.PlayerBox:AddSlider('WalkspeedSlider', {
-    Text = 'Walkspeed',
-    Default = 1,
-    Min = 1,
-    Max = 150,
-    Rounding = 1,
-    Compact = false,
-    Callback = function(Value)
-        ExternalSettings.Speed = Value
-    end
-})
-
-GroupBoxes.Left.PlayerBox:AddToggle('InfiniteJumpToggle', {
-    Text = 'Enable Infinite Jump',
-    Default = false,
-    Tooltip = 'enables inf jump',
-
-    Callback = function(Toggle)
-        if Toggle == true then
-            local HumanoidRootPart =  game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            local UserInputService = game:GetService("UserInputService")     
-            Connections:Conn("InfJumpConnection", game:GetService("RunService").RenderStepped:Connect(function()
-                local NewBV 
-                while UserInputService:IsKeyDown("Space") do wait()
-                    if not HumanoidRootPart:FindFirstChild(".") then
-                        NewBV = Instance.new("BodyVelocity")
-                        NewBV.Name = "."
-                        NewBV.MaxForce = Vector3.new(0, math.huge, 0)
-                        NewBV.Velocity = Vector3.new(0, ExternalSettings.JumpPower, 0)
-                        NewBV.Parent = HumanoidRootPart
-                    end
-                end
-                if NewBV then
-                     NewBV:Destroy()
-                end
-            end))
-        elseif Toggle == false then
-            Connections:Disconnect("InfJumpConnection")
-        end
-    end
-})
-
-GroupBoxes.Left.PlayerBox:AddSlider('InfiniteJumpSlider', {
-    Text = 'Jump Power',
-    Default = 1,
-    Min = 1,
-    Max = 150,
-    Rounding = 1,
-    Compact = false,
-    Callback = function(Value)
-        ExternalSettings.JumpPower = Value;
-    end
-})
-
-GroupBoxes.Left.ESPBox:AddToggle('ToggleHollowMobESP', {
-    Text = 'Show Hollow-Classed Mobs',
-    Default = false,
-    Tooltip = 'enables esp for mobs (EXPERIMENTAL, MAY NOT BE AS ACCURATE)',
-
-    Callback = function(Toggle)
-        ExternalSettings.ESPSettings.MobESPs.HollowMobsEnabled = Toggle
-    end
-})
-
-GroupBoxes.Left.FarmingBox:AddToggle('AutoCreateParty', {
-    Text = 'Adjuchas Notifier',
-    Default = false,
-    Tooltip = 'notifies if adjucha',
-
-    Callback = function(Toggle)
-        local function NotifyAdjuchas(Path)
-            for _,potentialAdjucha in Path:GetChildren() do
-                if potentialAdjucha.ClassName == "Model" then
-                    if potentialAdjucha.Name:match("Adjuc") and potentialAdjucha.Name:match("_") then
-                        Library:Notify("Adjuchas Spawned: "..potentialAdjucha.Name, 600)
-                    end
-                end
-            end
-        end
-
-        NotifyAdjuchas(workspace.Entities)
-        workspace.Entities.ChildAdded:Connect(function(_)
-            NotifyAdjuchas(workspace.Entities)
+local function AlertNotification(Data)
+    Fluent:Notify(Data)
+    task.spawn(function()
+        local AlertSound = "rbxassetid://5153734608"
+        local SoundInstance = Instance.new("Sound")
+        SoundInstance.Parent = workspace
+        SoundInstance.Volume = 10
+        SoundInstance:Play();SoundInstance.Ended:Connect(function()
+            SoundInstance:Destroy()
         end)
-    end
-})
+    end)
+end
 
-GroupBoxes.Left.FarmingBox:AddToggle('AutoCreateParty', {
-    Text = 'Auto-Create Party',
-    Default = false,
-    Tooltip = 'create party auto',
+local function setCFrameToPart(Part)
+    if not localPlayer.Character then return end
+    localPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = part.CFrame
+end
 
-    Callback = function(Toggle)
-        if Toggle == true then
-            Connections:Conn('AutoCreate_Party', game:GetService("RunService").RenderStepped:Connect(function()
-                local PlayerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
-                local MissionsUI = PlayerGui:FindFirstChild("MissionsUI")
+local function GetCodes()
+    return loadstring(game:HttpGet("https://pastebin.com/raw/Urv51Bdt"))()
+end
+
+
+local NoclipToggle = Tabs.Main:AddToggle("NoclipToggle", {
+    Title = "Enable Noclip",
+    Default = false
+}):OnChanged(function()
+    if Options.NoclipToggle.Value == true then
+        Connections:Conn("NoclipConnection", game:GetService("RunService").RenderStepped:Connect(function()
+            if not localPlayer.Character then
+                return
+            end
     
-                if not PlayerGui then
-                    return
+            for i,v in localPlayer.Character:GetChildren() do
+                if v:IsA("BasePart") == true then
+                    v.CanCollide = false
                 end
-                if not MissionsUI then
-                    return
-                end
-    
-                if MissionsUI.CreatePartyFrame.CreateParty.Visible == true then
-                    game.Players.LocalPlayer.Character:FindFirstChild("CharacterHandler").Remotes.PartyCreate:FireServer()
-                end
-            end))
-        else
-            Connections:Disconnect("AutoCreate_Party")
+            end
+        end))
+    else
+        if Connections:Disconnect("NoclipConnection") then
+            localPlayer.Character.Torso.CanCollide = true
         end
     end
-})
+end)
 
-GroupBoxes.Right.ESPSettingsBox:AddToggle('ToggleMobHealth', {
-    Text = 'Show Mob Health',
-    Default = false,
-    Tooltip = 'enables esp health for mobs',
-
-    Callback = function(Toggle)
-        ExternalSettings.ESPSettings.MobESPs.ShowHealth = Toggle
+local OldWalkspeed = localPlayer.Character:FindFirstChild("Humanoid").WalkSpeed
+local WalkspeedToggle = Tabs.Main:AddToggle("WalkspeedToggle", {
+    Title = "Enable WalkSpeed",
+    Default = false
+}):OnChanged(function()
+    if Options.WalkspeedToggle.Value == true then
+        Connections:Conn("WalkspeedConnection", game:GetService("RunService").RenderStepped:Connect(function()
+            localPlayer.Character:FindFirstChild("Humanoid").WalkSpeed = getgenv().ExternalSettings.WalkSpeed
+        end))
+    else
+        if Connections:Disconnect("WalkspeedConnection") then
+            localPlayer.Character:FindFirstChild("Humanoid").WalkSpeed = OldWalkspeed
+        end
     end
-})
-
-GroupBoxes.Right.ESPSettingsBox:AddSlider('TextSizeSlider', {
-    Text = 'Text Size',
+end)
+local WalkspeedSlider = Tabs.Main:AddSlider("WalkspeedSlider", {
+    Title = "WalkSpeed",
+    Description = "",
     Default = 1,
     Min = 1,
-    Max = 25,
+    Max = 150,
     Rounding = 1,
-    Compact = false,
     Callback = function(Value)
-        ExternalSettings.ESPSettings.TextSize = Value;
+        getgenv().ExternalSettings.WalkSpeed = Value
     end
 })
-local KillSelfButton = GroupBoxes.Left.PlayerBox:AddButton({
-    Text = 'Kill Player',
-    DoubleClick = false,
-    Tooltip = 'kill yourself (can use to become a lost soul)',
-    Func = function()
-        return game.Players.LocalPlayer.Character:BreakJoints()
-    end,
+
+local OldWalkspeed = localPlayer.Character:FindFirstChild("Humanoid").WalkSpeed
+local InfiniteJumpToggle = Tabs.Main:AddToggle("InfiniteJumpToggle", {
+    Title = "Enable Infinite Jump",
+    Default = false
+}):OnChanged(function()
+    if Options.InfiniteJumpToggle.Value == true then
+        local HumanoidRootPart =  game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local UserInputService = game:GetService("UserInputService")     
+        Connections:Conn("InfJumpConnection", game:GetService("RunService").RenderStepped:Connect(function()
+            local NewBV 
+            while UserInputService:IsKeyDown("Space") do wait()
+                if not HumanoidRootPart:FindFirstChild(".") then
+                    NewBV = Instance.new("BodyVelocity")
+                    NewBV.Name = "."
+                    NewBV.MaxForce = Vector3.new(0, math.huge, 0)
+                    NewBV.Velocity = Vector3.new(0, getgenv().ExternalSettings.JumpPower, 0)
+                    NewBV.Parent = HumanoidRootPart
+                end
+            end
+            if NewBV then
+                NewBV:Destroy()
+            end
+        end))
+    else
+        Connections:Disconnect("InfJumpConnection")
+    end
+end)
+local InfiniteJumpSlider = Tabs.Main:AddSlider("InfiniteJumpSlider", {
+    Title = "Infinite Jump",
+    Description = "",
+    Default = 1,
+    Min = 1,
+    Max = 100,
+    Rounding = 1,
+    Callback = function(Value)
+        getgenv().ExternalSettings.JumpPower = Value
+    end
 })
 
-local TweenToKisuke = (game.PlaceId == PlaceIds.Karakura) and GroupBoxes.Right.OthersBox:AddButton({
-    Text = 'To Kisuke',
-    DoubleClick = false,
-    Tooltip = 'tween to kisuke (CAN AA GUN)',
-    Func = function()
-        local isTweening = false
-        local ToKisuke = TweenService:Create(game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart"), TweenInfo.new(10, Enum.EasingStyle.Linear), {CFrame = workspace.NPCs:FindFirstChild("Kisuke").Kisuke:FindFirstChild("HumanoidRootPart").CFrame})
+local HoldM1Toggle = Tabs.Main:AddToggle("HoldM1Toggle", {
+    Title = "Enable Hold M1",
+    Default = false
+}):OnChanged(function()
+    if Options.HoldM1Toggle.Value == true then
+        local M1Down = false
+        Connections:Conn("OnMouseDown", game:GetService("UserInputService").InputBegan:Connect(function(Input, _GPE)
+            if _GPE then return end
 
-        if not isTweening then
-            isTweening = not isTweening
-            ToKisuke:Play(); ToKisuke.Completed:Connect(function()
-                isTweening = false
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                M1Down = true
+                warn("down")
+                return
+            end
+        end));Connections:Conn("OnMouseUp", game:GetService("UserInputService").InputEnded:Connect(function(Input, _GPE)
+            if _GPE then return end
+
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                M1Down = false
+                warn("up")
+                return
+            end
+        end))
+
+        while task.wait(0.25) do
+            if not localPlayer.Character:FindFirstChild("CharacterHandler") then
+                return
+            end
+            if M1Down == true then
+                game.ReplicatedStorage.Remotes.ServerCombatHandler:FireServer("LightAttack")
+            end
+        end
+    else
+        Connections:Disconnect("OnMouseUp");Connections:Disconnect("OnMouseDown")
+    end
+end)
+
+Tabs.Main:AddButton({
+	Title = "Reset",
+	Description = "(used to become lost soul, unbug yourself, etc)",
+	Callback = function()
+		if localPlayer.Character and localPlayer.Character:FindFirstChild("Head")  then
+            localPlayer.Character:FindFirstChild("Head"):Destroy()
+        end
+	end
+})
+
+Tabs.Keybinds:AddParagraph({
+    Title = "Keybinds",
+    Content = "soon not yet\nwait!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+})
+
+Tabs.Teleports:AddButton({
+	Title = "Tween To Kisuke",
+	Description = "(Become a soul reaper as a lost soul)",
+	Callback = function()
+		local inTween = false
+        local Tween = game:GetService("TweenService"):Create(localPlayer.Character.HumanoidRootPart, TweenInfo.new(10, Enum.EasingStyle.Linear), {CFrame = workspace.NPCs.Kisuke.Kisuke:FindFirstChild("HumanoidRootPart").CFrame})
+
+        if inTween == false then
+            inTween = true
+            Tween:Play(); Tween.Completed:Connect(function()
+                task.wait(1)
+                inTween = false
             end)
         end
-        return
-    end,
-}) or nil
+	end
+})
 
---GroupBoxes.Left.OthersBox:AddDivider()
-
-local TPToWanden = not (game.PlaceId == PlaceIds.Wanden) or not (game.PlaceId == PlaceIds.Hueco) and GroupBoxes.Right.OthersBox:AddButton({
-    Text = 'TP To Wanden',
-    DoubleClick = false,
-    Tooltip = 'tp to wanden',
-    Func = function()
-        local Part = nil
-        if (game.PlaceId == PlaceIds.Karakura) then
-            warn("Karakura")
-            Part = workspace.WandenreichGate:FindFirstChild("WandenGate")
+Tabs.Teleports:AddButton({
+	Title = "Teleport To Wanden",
+	Callback = function()
+        if not (game.PlaceId == 14069678431) then
+            return Fluent:Notify({
+                Title = "lightage",
+                Content = "You must be in Karakura.",
+                Duration = 15
+            })
         end
-
-        return teleportToPlace(game.Players.LocalPlayer, Part)
-    end,
-}) or nil
-
-local TPToLasNoches = (game.PlaceId == PlaceIds.Hueco) and GroupBoxes.Right.OthersBox:AddButton({
-    Text = 'TP To Las Noches',
-    DoubleClick = false,
-    Tooltip = 'tp to las noches',
-    Func = function()
-        teleportToPlace(game.Players.LocalPlayer,workspace:FindFirstChild("LasNoches").MenosPit)
-        return 
-    end,
-}) or nil
-
-local TPToSoulSociety = not (game.PlaceId == PlaceIds.SoulSociety) or not (game.PlaceId == PlaceIds.Hueco) and GroupBoxes.Right.OthersBox:AddButton({
-    Text = 'TP To Soul Society',
-    DoubleClick = false,
-    Tooltip = 'tp to ss',
-    Func = function()
-        local Part = nil
-        if (game.PlaceId == PlaceIds.Karakura) then
-            Part = workspace.SoulGate:FindFirstChild("SoulGate")
+		if workspace:FindFirstChild("WandenGate") and workspace.WandenGate:GetChildren()  then
+            return setCFrameToPart(workspace.WandenGate:FindFirstChild("WandenGate"))
         end
+	end
+})
 
-        return teleportToPlace(game.Players.LocalPlayer, Part)
-    end,
-}) or nil
+Tabs.Teleports:AddButton({
+	Title = "Teleport To Soul Society",
+	Callback = function()
+        if not (game.PlaceId == 14069678431) then
+            return Fluent:Notify({
+                Title = "lightage",
+                Content = "You must be in Karakura.",
+                Duration = 15
+            })
+        end
+		if workspace:FindFirstChild("SoulGate") and workspace.WandenGate:GetChildren()  then
+            return setCFrameToPart(workspace.WandenGate:FindFirstChild("SoulGate"))
+        end
+	end
+})
 
--- lib stuff
---Library:SetWatermarkVisibility(true)
---Library:SetWatermark('YOU ARE RUNNING: v1')
+Tabs.Automation:AddParagraph({
+    Title = "WARNING:",
+    Content = "YOU ARE AT RISK OF GETTING BANNED IN MULTIPLE WAYS, TO AVOID THIS, PLEASE PLAY IN LOWER SERVERS (3-5 PEOPLE), AND TRY NOT TO TELEPORT/TWEEN TO PLACES WITHIN A SHORT TIME SPAN. YOU MAY GET AA-GUNNED."
+})
+local AutoCreateParty = Tabs.Automation:AddToggle("AutoCreateParty", {
+    Title = "Auto-Create Party",
+    Default = false
+}):OnChanged(function()
+    if Options.AutoCreateParty.Value == true then
+        Connections:Conn('AutoCreate_Party', game:GetService("RunService").RenderStepped:Connect(function()
+            local MissionsUI = PlayerGui:FindFirstChild("MissionsUI")
 
-Library:OnUnload(function()
-    print('Unloaded!')
-    Library.Unloaded = true
+            if not PlayerGui then
+                return
+            end
+            if not MissionsUI then
+                return
+            end
+
+            if MissionsUI.CreatePartyFrame.CreateParty.Visible == true then
+                game.Players.LocalPlayer.Character:FindFirstChild("CharacterHandler").Remotes.PartyCreate:FireServer()
+            end
+        end))
+    else
+        Connections:Disconnect("AutoCreate_Party")
+    end
 end)
 
-local MenuGroup = Tabs.Settings:AddLeftGroupbox('Menu')
-MenuGroup:AddButton('Unload', function() Library:Unload() end) 
-MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'Insert', NoUI = true, Text = 'Menu keybind' }) 
-Library.ToggleKeybind = Options.MenuKeybind -- Allows you to have a custom keybind for the menu
+local InAction = false
+local AutoCreateParty = Tabs.Automation:AddToggle("AutoQueue", {
+    Title = "Auto-Queue For Mission",
+    Description = "(TELEPORTS YOU TO A MISSION BOARD, MAY BE RISKY IF TELEPORTED WITHIN A SHORT TIME SPAN)",
+    Default = false
+}):OnChanged(function()
+    if Options.AutoQueue.Value == true then
+        Connections:Conn('AutoQueue', game:GetService("RunService").RenderStepped:Connect(function()
+            local QueueUI = PlayerGui:FindFirstChild("QueueUI")
+            local MissionsUI = PlayerGui:FindFirstChild("MissionsUI")
+            local TextThingy = MissionsUI:FindFirstChild("Queueing")
+            if MissionsUI.CreatePartyFrame.CreateParty.Visible == true  then
+                return Fluent:Notify({
+                    Title = "lightage",
+                    Content = "You are not in a party.",
+                    Duration = 5
+                }), Options.AutoQueue:SetValue(false), Connections:Disconnect('AutoQueue')
+            end
+            if not QueueUI then
+                return
+            end
+            if InAction then
+                return
+            end
+            if not localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                return
+            end
+            if QueueUI.Enabled == true then
+                return
+            end
+            if QueueUI.Enabled == false then
+                repeat
+                    InAction = true
+                    localPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = workspace.NPCs.MissionNPC:FindFirstChild("MissionBoard"):FindFirstChild("Board"):FindFirstChild("Union").CFrame
+                    task.wait(0.0001)
+                    for _,missionboard in workspace.NPCs.MissionNPC:GetChildren() do
+						if missionboard:FindFirstChild("Board") then
+							local SelectedBoard = missionboard:FindFirstChild("Board"):FindFirstChild("Union")
+							if (localPlayer.Character.HumanoidRootPart.Position - SelectedBoard.Position).magnitude <= 32 then
+								fireclickdetector(SelectedBoard:FindFirstChildWhichIsA("ClickDetector"))
+								onChildAdded = localPlayer.ChildAdded:Connect(function(Child)
+									if Child:IsA("RemoteEvent") == true and Child.Name == "MissionBoard" then
+										task.wait(1/2)
+										Child:FireServer("Yes")
+										onChildAdded:Disconnect()
+									end
+								end)
+							else
+								break
+							end
+						end
+					end
 
-ThemeManager:SetLibrary(Library)
-SaveManager:SetLibrary(Library)
+                    task.wait(5)
+                    InAction = false
+                until QueueUI.Enabled == true or Queueing.Visible == true
+            end
+        end))
+    else
+        Connections:Disconnect('AutoQueue')
+    end
+end)
 
-SaveManager:IgnoreThemeSettings() 
-SaveManager:SetIgnoreIndexes({'MenuKeybind'}) 
-SaveManager:SetFolder('lightage')
-SaveManager:SetFolder('lightage/rogue-lineage-richest-minion')
+local IsTweening = false;
+Tabs.Automation:AddButton({
+	Title = "Tween To Mission Board",
+	Description = "(TWEENS TO A MISSION BOARD AND QUEUES, SAFER OPTION)",
+	Callback = function()
+		local MissionsUI = PlayerGui:FindFirstChild("MissionsUI")
+		if IsTweening then return end
+		if MissionsUI.CreatePartyFrame.CreateParty.Visible == true then
+			return Window:Dialog({
+				Title = "Error;",
+				Content = "You are not in a party - turn on Auto-Create, or make a party",
+				Buttons = {{Title = "ok", Callback = function()
+					print("Confirmed the dialog.")
+				end},
+				}
+			})  
+		else
+			IsTweening = true
+            local TweenObj;
+			local Tween;
 
-SaveManager:BuildConfigSection(Tabs.Settings) 
-ThemeManager:ApplyToTab(Tabs.Settings)
-
-Tabs.Settings:AddRightGroupbox('Debug'):AddButton('Clear All Connections', function() Connections:ClearAllCurrent() end) 
-
-local function UpdateDrawings()
-    local a,b = pcall(function()
-        if ExternalSettings.ESPSettings.MobESPs.HollowMobsEnabled then
-            for Mob,drawingObj in next,HollowESPs do
-                local partToRender = Mob.PrimaryPart
-                if partToRender then
-                        --local Distance = (workspace.CurrentCamera.CFrame.Position - partToRender.Position).Magnitude
-                        --if Distance > ExternalSettings.MobESPRange then continue end 
-                    local screenPosition,canSee = workspace.CurrentCamera:WorldToViewportPoint(partToRender.Position)
-                    if canSee then
-                        local Health = partToRender.Parent:FindFirstChild("Humanoid") and math.ceil(partToRender.Parent:FindFirstChild("Humanoid").Health)
-                        local MaxHealth = partToRender.Parent:FindFirstChild("Humanoid") and math.ceil(partToRender.Parent:FindFirstChild("Humanoid").MaxHealth)
-                        drawingObj.Text = ExternalSettings.ESPSettings.MobESPs.ShowHealth and partToRender.Parent.Name:split("_")[1]:lower().." ["..Health.."/"..MaxHealth.."]" or partToRender.Parent.Name:split("_")[1]:lower()
-                        drawingObj.Font = ExternalSettings.ESPSettings.TextFont
-                        drawingObj.Size = ExternalSettings.ESPSettings.TextSize
-                        drawingObj.Position = Vector2.new(screenPosition.X,screenPosition.Y)
-                        drawingObj.Visible = true
-                    else
-                        drawingObj.Visible = false
-                     end
-                else
-                    drawingObj.Visible = false
+            for _,v in pairs(workspace.NPCs.MissionNPC:GetChildren()) do
+                if v:IsA("Model") == true then
+                    table.foreach(v:GetChildren(), warn)
+                    local BoardUnion = v:FindFirstChild("Board") and v.Board:FindFirstChild("Union")
+                    if (localPlayer.Character:FindFirstChild("HumanoidRootPart").Position - BoardUnion.Position).magnitude < math.huge then
+                        Tween = game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(15, Enum.EasingStyle.Linear), {CFrame = BoardUnion.CFrame})
+                        Tween:Play()
+                    end
                 end
             end
-        else
-            for Mob,drawingObj in next,HollowESPs do
-                drawingObj.Visible = false
+            Tween:Play();Tween.Completed:Connect(function()
+				local onChildAdded = nil
+				task.delay(1, function()
+					for _,missionboard in pairs(workspace.NPCs.MissionNPC:GetChildren()) do
+						if missionboard:FindFirstChild("Board") then
+							local SelectedBoard = missionboard:FindFirstChild("Board"):FindFirstChild("Union")
+							if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - SelectedBoard.Position).magnitude <= 32 then
+								fireclickdetector(SelectedBoard:FindFirstChildWhichIsA("ClickDetector"))
+								onChildAdded = game.Players.LocalPlayer.ChildAdded:Connect(function(Child)
+									if Child:IsA("RemoteEvent") == true and Child.Name == "MissionBoard" then
+										task.wait(1/2)
+										Child:FireServer("Yes")
+										IsTweening = false
+										onChildAdded:Disconnect()
+									end
+								end)
+							else
+								IsTweening = false
+                                onChildAdded:Disconnect()
+								break
+							end
+						end
+					end
+				end)
+			end)
+			game.Players.LocalPlayer.PlayerGui.DialogueUI.dialogueFrame.Visible = false
+		end
+	end
+})
+
+local CodeOutput = {Successful = {};Invalid = {}}
+Tabs.Automation:AddButton({
+	Title = "Redeem Valid Codes",
+    Description = "(will provide an output on successful/invalid codess)",
+	Callback = function()
+        if not localPlayer.Character then return end
+        CodeOutput.Successful = {};CodeOutput.Invalid = {}
+        local CodesList = GetCodes()
+        for code,_ in next,CodesList do
+            local _CodeResponse = localPlayer.Character:FindFirstChild("CharacterHandler").Remotes:FindFirstChild("Codes"):InvokeServer(tostring(code))
+            if _CodeResponse then
+                table.insert(CodeOutput.Successful, true)
+            else
+                table.insert(CodeOutput.Invalid, true)
+            end
+            task.wait(0.01)
+        end
+        Fluent:Notify({
+            Title = "lightage",
+            Content = "Codes Redeemed: \nSuccessful: "..#CodeOutput.Successful.."\nInvalid: "..#CodeOutput.Invalid,
+            Duration = 15
+        })
+	end
+})
+
+local AdjuchasNotifierToggle = Tabs.Automation:AddToggle("AdjuchasNotifier", {
+    Title = "Adjuchas Notifier",
+    Default = false
+}):OnChanged(function()
+    if Options.AutoQueue.Value == true then
+        for _,adjucha in pairs(workspace.Entities:GetChildren()) do
+            if adjucha.Name:match("Adju") then
+                AlertNotification({
+                    Title = "lightage",
+                    Content = "An adjuchas has spawned in your server: "..adjucha.Name,
+                    Duration = 1e9
+                })
             end
         end
-    end)
 
-    if not a then warn(tostring(b)) end
-end
-game:GetService("RunService"):BindToRenderStep("UpdateESPDrawings", 201, UpdateDrawings)
+        Connections:Conn("OnChildAddedAdjuchas", workspace.Entities.ChildAdded:Connect(function(Child)
+            if Child.Name:match("Adju") then
+                AlertNotification({
+                    Title = "lightage",
+                    Content = "An adjuchas has spawned in your server: "..Child.Name,
+                    Duration = 1e9
+                })
+            end
+        end))
+    else
+        Connections:Disconnect('OnChildAddedAdjuchas')
+    end
+end)
+-- Addons:
+-- SaveManager (Allows you to have a configuration system)
+-- InterfaceManager (Allows you to have a interface managment system)
+
+-- Hand the library over to our managers
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+-- Ignore keys that are used by ThemeManager.
+-- (we dont want configs to save themes, do we?)
+SaveManager:IgnoreThemeSettings()
+
+-- You can add indexes of elements the save manager should ignore
+SaveManager:SetIgnoreIndexes({})
+
+-- use case for doing it this way:
+-- a script hub could have themes in a global folder
+-- and game configs in a separate folder per game
+InterfaceManager:SetFolder("lightagev2")
+SaveManager:SetFolder("lightagev2/type-soul")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+-- which has been marked to be one that auto loads!
+SaveManager:LoadAutoloadConfig()
+Window:SelectTab(1)
