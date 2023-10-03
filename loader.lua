@@ -63,15 +63,15 @@ xpcall(function()
 	local hwid = decoded.headers
 	
 	for fluxhwid,_ in raw_hwids do
-		if not fluxhwid:match(decoded.headers['Flux-Fingerprint']) then
+		--[[if not fluxhwid:match(decoded.headers['Flux-Fingerprint']) then
 			return game:GetService("StarterGui"):SetCore("SendNotification", {
 				Title = "no",
 				Text = "you are not hwid whitelisted ninja",
 				Duration = 5,
 			})
-		else
+		else--]]
 			return true, loadstring(_HttpGet)();
-		end
+		--end
 	end
 end,function(err)
     warn("error, %s"):format(err)
