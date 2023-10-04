@@ -4,8 +4,10 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 local ConnectionHandler = loadstring(game:HttpGet('https://github.com/averyoriginalusername/main/raw/main/ConnectionManager.lua'))()
 
 local localPlayer = game.Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 local PlayerGui = localPlayer:FindFirstChild("PlayerGui")
 local Connections = ConnectionHandler.new()
+local ESP_Players = {}
 local Window = Fluent:CreateWindow({
     Title = "lightage",
     SubTitle = "VERSION 2 (PRIVATE SCRIPT)",
@@ -18,17 +20,34 @@ local Window = Fluent:CreateWindow({
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Options = Fluent.Options
 getgenv().ExternalSettings = {
+    ESPSettings = {
+        Player = {
+            Color = Color3.new(1, 1, 1),
+            TextSize = 15,
+            Font = 1,
+            Enabled = false,
+            ShowFaction = false,
+            ShowDistance = false,
+            ShowHealth = false,
+        },
+        Mobs = {},
+    },
     WalkSpeed = 0,
     JumpPower = 0,
+    AutoEat = false,
 }
+
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    ESP = Window:AddTab({ Title = "Extrasensory Perception", Icon = "" }),
     Automation = Window:AddTab({ Title = "Automation", Icon = ""}),
     Teleports = Window:AddTab({ Title = "Teleports", Icon = ""}),
     Keybinds = Window:AddTab({ Title = "Keybinds", Icon = ""--[["layers"]] }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
+local find = string.find
+local ceil = math.ceil
 local function AlertNotification(Data)
     Fluent:Notify(Data)
     task.spawn(function()
@@ -42,15 +61,55 @@ local function AlertNotification(Data)
     end)
 end
 
+local function newDrawing()
+    local DrawingObj = Drawing.new("Text")
+    DrawingObj.Font = 1
+    DrawingObj.Size = 15
+    DrawingObj.Visible = false
+    DrawingObj.Center = true
+    DrawingObj.Color = Color3.new(1, 1, 1)
+    return DrawingObj
+end
+
 local function setCFrameToPart(Part)
     if not localPlayer.Character then return end
     localPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = part.CFrame
+end
+
+local function getDistance(pointA, pointB)
+    return (pointA.Position - pointB.Position).magnitude
+end
+
+local function GetFaction(Character)
+    for _,child in Character:GetChildren() do
+        if child.ClassName == "Shirt" then
+            if child.Name:match("ArrancarShirt") then
+                return "ARRANCAR"
+            elseif child.Name:match("ShinigamiShirt") then
+                return "SHINIGAMI"
+            elseif child.Name:match("QuincyShirt") then
+                return "QUINCY"
+            end
+        end
+    end
+    return "UNKNOWN"
 end
 
 local function GetCodes()
     return loadstring(game:HttpGet("https://pastebin.com/raw/Urv51Bdt"))()
 end
 
+for _,v in game.Players:GetPlayers() do
+    if v == game.Players.LocalPlayer then continue end
+    ESP_Players[v] = newDrawing()
+end
+
+game.Players.PlayerAdded:Connect(function(Player)
+    ESP_Players[Player] = newDrawing()
+end)
+game.Players.PlayerRemoving:Connect(function(Player)
+    ESP_Players[Player]:Remove();ESP_Players[Player] = nil
+end)
 
 local NoclipToggle = Tabs.Main:AddToggle("NoclipToggle", {
     Title = "Enable Noclip",
@@ -92,7 +151,6 @@ local WalkspeedToggle = Tabs.Main:AddToggle("WalkspeedToggle", {
 end)
 local WalkspeedSlider = Tabs.Main:AddSlider("WalkspeedSlider", {
     Title = "WalkSpeed",
-    Description = "",
     Default = 1,
     Min = 1,
     Max = 150,
@@ -188,10 +246,99 @@ Tabs.Main:AddButton({
 	end
 })
 
-Tabs.Keybinds:AddParagraph({
-    Title = "Keybinds",
-    Content = "soon not yet\nwait!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+Tabs.ESP:AddParagraph({
+    Title = "Player ESP",
+    Description = "Player ESP"
 })
+
+local EnablePlayerESP = Tabs.ESP:AddToggle("EnablePlayerESP", {
+    Title = "Enabled",
+    Default = false
+}):OnChanged(function()
+    getgenv().ExternalSettings.ESPSettings.Player.Enabled = Options.EnablePlayerESP.Value
+end)
+
+local PlayerESPColor = Tabs.ESP:AddColorpicker("PlayerESPColor", {
+    Title = "Player ESP Color",
+    Default = Color3.fromRGB(1, 1, 1)
+}):OnChanged(function()
+    getgenv().ExternalSettings.ESPSettings.Player.Color = Options.PlayerESPColor.Value
+end)
+
+local InfiniteJumpSlider = Tabs.ESP:AddSlider("ESPTextSize", {
+    Title = "Text Size",
+    Default = 10,
+    Min = 10,
+    Max = 30,
+    Rounding = 0,
+    Callback = function(Value)
+        getgenv().ExternalSettings.ESPSettings.Player.TextSize = Value
+    end
+})
+
+local ESPFontDropdown = Tabs.ESP:AddDropdown("ESPFontDropdown", {
+    Title = "Text Font",
+    Values = {1, 2, 3},
+    Multi = false,
+    Default = 1,
+}):OnChanged(function()
+    getgenv().ExternalSettings.ESPSettings.Player.Font = Options.ESPFontDropdown.Value
+end)
+
+local ShowPlayerHealth = Tabs.ESP:AddToggle("ShowPlayerHealthESP", {
+    Title = "Show Health",
+    Default = false
+}):OnChanged(function()
+    getgenv().ExternalSettings.ESPSettings.Player.ShowHealth = Options.ShowPlayerHealthESP.Value
+end)
+
+local ShowPlayerDistance = Tabs.ESP:AddToggle("ShowPlayerDistanceESP", {
+    Title = "Show Distance",
+    Default = false
+}):OnChanged(function()
+    getgenv().ExternalSettings.ESPSettings.Player.ShowDistance = Options.ShowPlayerDistanceESP.Value
+end)
+
+local ShowPlayerFactions = Tabs.ESP:AddToggle("ShowPlayerFactionsESP", {
+    Title = "Show Factions",
+    Default = false
+}):OnChanged(function()
+    getgenv().ExternalSettings.ESPSettings.Player.ShowFaction = Options.ShowPlayerFactionsESP.Value
+end)
+
+local WalkspeedToggleBind = Tabs.Keybinds:AddKeybind("WalkspeedToggleKeybind", {
+    Title = "WalkSpeed Keybind",
+    Mode = "Toggle", -- Always, Toggle, Hold
+    Default = "F1", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
+
+    -- Occurs when the keybind is clicked, Value is `true`/`false`
+    Callback = function(Value)
+        Options.WalkspeedToggle:SetValue(not Options.WalkspeedToggle.Value)
+    end,
+})
+
+local InfiniteJumpKeybind = Tabs.Keybinds:AddKeybind("InfiniteJumpKeybind", {
+    Title = "Infinite Jump Keybind",
+    Mode = "Toggle", -- Always, Toggle, Hold
+    Default = "F2", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
+
+    -- Occurs when the keybind is clicked, Value is `true`/`false`
+    Callback = function(Value)
+        Options.InfiniteJumpToggle:SetValue(not Options.InfiniteJumpToggle.Value)
+    end,
+})
+
+local NoclipKeybind = Tabs.Keybinds:AddKeybind("NoclipKeybind", {
+    Title = "Noclip Keybind",
+    Mode = "Toggle", -- Always, Toggle, Hold
+    Default = "F3", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
+
+    -- Occurs when the keybind is clicked, Value is `true`/`false`
+    Callback = function(Value)
+        Options.NoclipToggle:SetValue(not Options.NoclipToggle.Value)
+    end,
+})
+
 
 Tabs.Teleports:AddButton({
 	Title = "Tween To Kisuke",
@@ -221,7 +368,7 @@ Tabs.Teleports:AddButton({
             })
         end
 		if workspace:FindFirstChild("WandenGate") and workspace.WandenGate:GetChildren()  then
-            return setCFrameToPart(workspace.WandenGate:FindFirstChild("WandenGate"))
+            return setCFrameToPart(workspace.WandenreichGate:FindFirstChild("WandenGate"))
         end
 	end
 })
@@ -237,7 +384,7 @@ Tabs.Teleports:AddButton({
             })
         end
 		if workspace:FindFirstChild("SoulGate") and workspace.WandenGate:GetChildren()  then
-            return setCFrameToPart(workspace.WandenGate:FindFirstChild("SoulGate"))
+            return setCFrameToPart(workspace.SoulGate:FindFirstChild("SoulGate"))
         end
 	end
 })
@@ -419,6 +566,33 @@ Tabs.Automation:AddButton({
 	end
 })
 
+local AutoEatFood = Tabs.Automation:AddToggle("AutoEatFoodToggle", {
+    Title = "Auto-Eat",
+    Default = false
+}):OnChanged(function()
+    getgenv().ExternalSettings.AutoEat = Options.AutoEatFoodToggle.Value
+    
+    while task.wait(0.1) do
+        if not getgenv().ExternalSettings.AutoEat then return end
+
+        for _,hollaw in workspace.Entities:GetChildren() do
+            if hollaw == nil then return end
+            if hollaw:IsA("Model") == true then
+                for _,_type in pairs({"Fishbone", "Menos", "Frisker", "Adjuchas"}) do
+                    if hollaw:GetAttribute("EntityID") and hollow:GetAttribute("EntityType") then
+                        if find(hollaw:GetAttribute("EntityID"), _type) and find(hollaw:GetAttribute("EntityID"), _type) then
+                            local Distance = getDistance(localPlayer.Character:FindFirstChild("HumanoidRootPart"), hollaw.PrimaryPart)
+                            if Distance <= 10 then
+                                localPlayer.Character:FindFirstChild("CharacterHandler").Remotes.Execute:FireServer()
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
 local AdjuchasNotifierToggle = Tabs.Automation:AddToggle("AdjuchasNotifier", {
     Title = "Adjuchas Notifier",
     Default = false
@@ -447,31 +621,58 @@ local AdjuchasNotifierToggle = Tabs.Automation:AddToggle("AdjuchasNotifier", {
         Connections:Disconnect('OnChildAddedAdjuchas')
     end
 end)
--- Addons:
--- SaveManager (Allows you to have a configuration system)
--- InterfaceManager (Allows you to have a interface managment system)
 
--- Hand the library over to our managers
+local function ESPBind()
+    if getgenv().ExternalSettings.ESPSettings.Player.Enabled == true then
+        for player,espObj in pairs(ESP_Players) do
+            local PrimaryPart = player.Character and player.Character.PrimaryPart
+            local Health = player.Character.Humanoid and ceil(player.Character:FindFirstChild("Humanoid").Health) or "???"
+            local MaxHealth = player.Character.Humanoid and ceil(player.Character:FindFirstChild("Humanoid").MaxHealth) or "???"
+
+            if PrimaryPart then
+                local playerPos,canSee = Camera:WorldToViewportPoint(PrimaryPart.Position)
+                if canSee then
+                    local formattedText = PrimaryPart.Parent.Name
+                    if getgenv().ExternalSettings.ESPSettings.Player.ShowHealth == true then
+                        formattedText = formattedText.."\n["..Health.."/"..MaxHealth.."]"
+                    end
+                    if getgenv().ExternalSettings.ESPSettings.Player.ShowFaction == true then
+                        formattedText = formattedText.."\n["..GetFaction(PrimaryPart.Parent).."]"
+                    end
+                    espObj.Position = Vector2.new(playerPos.X, playerPos.Y)
+                    espObj.Font = getgenv().ExternalSettings.ESPSettings.Player.Font
+                    espObj.Size = getgenv().ExternalSettings.ESPSettings.Player.TextSize
+                    espObj.Color = getgenv().ExternalSettings.ESPSettings.Player.Color
+                    espObj.Visible = true
+                    espObj.Text = formattedText
+                else
+                    espObj.Visible = false
+                end
+            else
+                espObj.Visible = false
+            end
+        end
+    else
+        for player,espObj in pairs(ESP_Players) do
+            espObj.Visible = false
+        end
+    end 
+end
+
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 
--- Ignore keys that are used by ThemeManager.
--- (we dont want configs to save themes, do we?)
 SaveManager:IgnoreThemeSettings()
 
--- You can add indexes of elements the save manager should ignore
 SaveManager:SetIgnoreIndexes({})
 
--- use case for doing it this way:
--- a script hub could have themes in a global folder
--- and game configs in a separate folder per game
 InterfaceManager:SetFolder("lightagev2")
 SaveManager:SetFolder("lightagev2/type-soul")
 
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
 
--- You can use the SaveManager:LoadAutoloadConfig() to load a config
--- which has been marked to be one that auto loads!
 SaveManager:LoadAutoloadConfig()
 Window:SelectTab(1)
+
+game:GetService("RunService"):BindToRenderStep("ESP_BindToRenderStep", 20, ESPBind)
