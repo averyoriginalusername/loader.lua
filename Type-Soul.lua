@@ -626,8 +626,8 @@ local function ESPBind()
     if getgenv().ExternalSettings.ESPSettings.Player.Enabled == true then
         for player,espObj in pairs(ESP_Players) do
             local PrimaryPart = player.Character and player.Character.PrimaryPart
-            local Health = player.Character.Humanoid and ceil(player.Character:FindFirstChild("Humanoid").Health) or "???"
-            local MaxHealth = player.Character.Humanoid and ceil(player.Character:FindFirstChild("Humanoid").MaxHealth) or "???"
+            local Health = player.Character:FindFirstChild("Humanoid") and ceil(player.Character:FindFirstChild("Humanoid").Health)
+            local MaxHealth = player.Character:FindFirstChild("Humanoid") and ceil(player.Character:FindFirstChild("Humanoid").MaxHealth)
 
             if PrimaryPart then
                 local playerPos,canSee = Camera:WorldToViewportPoint(PrimaryPart.Position)
