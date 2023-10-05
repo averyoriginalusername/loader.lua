@@ -27,7 +27,6 @@ getgenv().ExternalSettings = {
             Font = 1,
             Enabled = false,
             ShowFaction = false,
-            ShowDistance = false,
             ShowHealth = false,
         },
         Mobs = {},
@@ -39,7 +38,7 @@ getgenv().ExternalSettings = {
 
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    ESP = Window:AddTab({ Title = "Extrasensory Perception", Icon = "" }),
+    ESP = Window:AddTab({ Title = "ESP", Icon = "" }),
     Automation = Window:AddTab({ Title = "Automation", Icon = ""}),
     Teleports = Window:AddTab({ Title = "Teleports", Icon = ""}),
     Keybinds = Window:AddTab({ Title = "Keybinds", Icon = ""--[["layers"]] }),
@@ -89,6 +88,10 @@ local function GetFaction(Character)
                 return "SHINIGAMI"
             elseif child.Name:match("QuincyShirt") then
                 return "QUINCY"
+            end
+        elseif child.ClassName == "LocalScript" then
+            if child.Name:match("AnimateFishbone") then
+                return "HOLLOW"
             end
         end
     end
@@ -290,13 +293,6 @@ local ShowPlayerHealth = Tabs.ESP:AddToggle("ShowPlayerHealthESP", {
     Default = false
 }):OnChanged(function()
     getgenv().ExternalSettings.ESPSettings.Player.ShowHealth = Options.ShowPlayerHealthESP.Value
-end)
-
-local ShowPlayerDistance = Tabs.ESP:AddToggle("ShowPlayerDistanceESP", {
-    Title = "Show Distance",
-    Default = false
-}):OnChanged(function()
-    getgenv().ExternalSettings.ESPSettings.Player.ShowDistance = Options.ShowPlayerDistanceESP.Value
 end)
 
 local ShowPlayerFactions = Tabs.ESP:AddToggle("ShowPlayerFactionsESP", {
@@ -578,7 +574,7 @@ local AutoEatFood = Tabs.Automation:AddToggle("AutoEatFoodToggle", {
         for _,hollaw in workspace.Entities:GetChildren() do
             if hollaw == nil then return end
             if hollaw:IsA("Model") == true then
-                for _,_type in pairs({"Fishbone", "Menos", "Frisker", "Adjuchas"}) do
+                for _,_type in pairs({"Fishbone", "Menos", "Frisker", "Jackal"}) do
                     if hollaw:GetAttribute("EntityID") and hollow:GetAttribute("EntityType") then
                         if find(hollaw:GetAttribute("EntityID"), _type) and find(hollaw:GetAttribute("EntityID"), _type) then
                             local Distance = getDistance(localPlayer.Character:FindFirstChild("HumanoidRootPart"), hollaw.PrimaryPart)
@@ -599,7 +595,7 @@ local AdjuchasNotifierToggle = Tabs.Automation:AddToggle("AdjuchasNotifier", {
 }):OnChanged(function()
     if Options.AutoQueue.Value == true then
         for _,adjucha in pairs(workspace.Entities:GetChildren()) do
-            if adjucha.Name:match("Adju") then
+            if adjucha:IsA("Model") == true and adjucha.Name:match("Jackal") then
                 AlertNotification({
                     Title = "lightage",
                     Content = "An adjuchas has spawned in your server: "..adjucha.Name,
@@ -609,7 +605,7 @@ local AdjuchasNotifierToggle = Tabs.Automation:AddToggle("AdjuchasNotifier", {
         end
 
         Connections:Conn("OnChildAddedAdjuchas", workspace.Entities.ChildAdded:Connect(function(Child)
-            if Child.Name:match("Adju") then
+            if Child.Name:match("Jackal") then
                 AlertNotification({
                     Title = "lightage",
                     Content = "An adjuchas has spawned in your server: "..Child.Name,
@@ -625,20 +621,21 @@ end)
 local function ESPBind()
     if getgenv().ExternalSettings.ESPSettings.Player.Enabled == true then
         for player,espObj in pairs(ESP_Players) do
-            local PrimaryPart = player.Character and player.Character.PrimaryPart
-            local Health = player.Character:FindFirstChild("Humanoid") and ceil(player.Character:FindFirstChild("Humanoid").Health)
-            local MaxHealth = player.Character:FindFirstChild("Humanoid") and ceil(player.Character:FindFirstChild("Humanoid").MaxHealth)
+            local eCharacter = player.Character or player.CharacterAdded:Wait()
+            local PrimaryPart = eCharacter and eCharacter.PrimaryPart
+            local eHumanoid = eCharacter and eCharacter:FindFirstChild("Humanoid")
 
-            if PrimaryPart then
+            if PrimaryPart and PrimaryPart ~= nil and PrimaryPart.Parent ~= nil then
                 local playerPos,canSee = Camera:WorldToViewportPoint(PrimaryPart.Position)
                 if canSee then
                     local formattedText = PrimaryPart.Parent.Name
                     if getgenv().ExternalSettings.ESPSettings.Player.ShowHealth == true then
-                        formattedText = formattedText.."\n["..Health.."/"..MaxHealth.."]"
+                        formattedText = formattedText.."\n["..ceil(eHumanoid.Health).."/"..ceil(eHumanoid.MaxHealth).."]"
                     end
                     if getgenv().ExternalSettings.ESPSettings.Player.ShowFaction == true then
                         formattedText = formattedText.."\n["..GetFaction(PrimaryPart.Parent).."]"
                     end
+                    espObj.Outline = true
                     espObj.Position = Vector2.new(playerPos.X, playerPos.Y)
                     espObj.Font = getgenv().ExternalSettings.ESPSettings.Player.Font
                     espObj.Size = getgenv().ExternalSettings.ESPSettings.Player.TextSize
