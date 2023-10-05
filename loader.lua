@@ -25,6 +25,13 @@ local HttpLink do
 	ClientHWID = CheckExecutor({Valyse = true}) and gethwid() or game:GetService('RbxAnalyticsService'):GetClientId()
 	for i: number, scriptLink in next,GameList do
 		if (i == game.PlaceId) then
+			if (scriptLink:match('Type-Soul') then
+				game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
+    					if State == Enum.TeleportState.Started then
+       						syn.queue_on_teleport("<script to execute after TP>")
+    					end
+				end)
+			end
 			if (scriptLink:match('Fighting-Game.lua')) then
 				if CheckExecutor({Valyse = true}) then
 					loadstring(game:HttpGet('https://raw.githubusercontent.com/Tamim468/Valyseonly/main/synsupport.lua'))();
