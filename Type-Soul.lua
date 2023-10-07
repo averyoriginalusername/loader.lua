@@ -19,6 +19,7 @@ local Window = Fluent:CreateWindow({
 })
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Options = Fluent.Options
+local ExternalAssets = game:GetObjects("rbxassetid://14985186166")[1]
 getgenv().ExternalSettings = {
     ESPSettings = {
         Player = {
@@ -90,7 +91,7 @@ local function GetFaction(Character)
                 return "QUINCY"
             end
         elseif child.ClassName == "LocalScript" then
-            if child.Name:match("AnimateFishbone") then
+            if child.Name:match("AnimateFishbone") or child.Name:match("AnimateMenos") or child.Name:match("AnimateAdjuchas") then
                 return "HOLLOW"
             end
         end
@@ -238,6 +239,24 @@ local HoldM1Toggle = Tabs.Main:AddToggle("HoldM1Toggle", {
         Connections:Disconnect("OnMouseUp");Connections:Disconnect("OnMouseDown")
     end
 end)
+--[[
+local ChatLoggerInstance = false
+local HoldM1Toggle = Tabs.Main:AddToggle("EnableChatLogger", {
+    Title = "Enable Chat Logger",
+    Default = false
+}):OnChanged(function()
+    if Options.EnableChatLogger.Value == true then
+        local ChatLogger = ExternalAssets.ChatLogger:Clone()
+        ChatLogger.DragFrame.Draggable = true
+        ChatLogger.Name = game:GetService("HttpService"):GenerateGUID(false)
+    else
+       if ChatLogger then
+         ChatLogger:Destroy();
+         task.wait();
+         ChatLogger = false 
+        end 
+    end
+end)--]]
 
 Tabs.Main:AddButton({
 	Title = "Reset",
@@ -630,10 +649,10 @@ local function ESPBind()
                 if canSee then
                     local formattedText = PrimaryPart.Parent.Name
                     if getgenv().ExternalSettings.ESPSettings.Player.ShowHealth == true then
-                        formattedText = formattedText.."\n["..ceil(eHumanoid.Health).."/"..ceil(eHumanoid.MaxHealth).."]"
+                        formattedText = formattedText..("\n[%d/%d]"):format(ceil(eHumanoid.Health), ceil(eHumanoid.MaxHealth))
                     end
                     if getgenv().ExternalSettings.ESPSettings.Player.ShowFaction == true then
-                        formattedText = formattedText.."\n["..GetFaction(PrimaryPart.Parent).."]"
+                        formattedText = formattedText..("\n[%s]"):format(GetFaction(PrimaryPart.Parent))
                     end
                     espObj.Outline = true
                     espObj.Position = Vector2.new(playerPos.X, playerPos.Y)
@@ -673,3 +692,18 @@ SaveManager:LoadAutoloadConfig()
 Window:SelectTab(1)
 
 game:GetService("RunService"):BindToRenderStep("ESP_BindToRenderStep", 20, ESPBind)
+
+
+local function RecordMessage(Player)
+    Player.Chatted:Connect(function(Message)
+        warn(("[%s]: %s"):format(Player.Name, Message))
+    end)
+end
+
+do
+    for _,plr in game.Players:GetChildren() do
+        RecordMessage(plr)
+    end; game.Players.PlayerAdded:Connect(function(plr)
+        RecordMessage(plr)
+    end)
+end
