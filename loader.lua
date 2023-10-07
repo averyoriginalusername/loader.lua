@@ -75,10 +75,7 @@ xpcall(function()
 		end
 	end
 	--]]
-	local keyapi = 'https://lightage.000webhostapp.com/licensekeys.php?key='
-	if game:HttpGet(keyapi..getgenv().script_key) == "valid_key" then
-		return true, loadstring(_HttpGet)()
-	end
+	return true, loadstring(_HttpGet)()
 end,function(err)
     warn("error, %s"):format(err)
 end)
