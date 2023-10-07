@@ -25,13 +25,6 @@ local HttpLink do
 	ClientHWID = CheckExecutor({Valyse = true}) and gethwid() or game:GetService('RbxAnalyticsService'):GetClientId()
 	for i: number, scriptLink in next,GameList do
 		if (i == game.PlaceId) then
-			if (scriptLink:match('Type-Soul') then
-				game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
-    					if State == Enum.TeleportState.Started then
-       						syn.queue_on_teleport("<script to execute after TP>")
-    					end
-				end)
-			end
 			if (scriptLink:match('Fighting-Game.lua')) then
 				if CheckExecutor({Valyse = true}) then
 					loadstring(game:HttpGet('https://raw.githubusercontent.com/Tamim468/Valyseonly/main/synsupport.lua'))();
@@ -64,23 +57,28 @@ end)(function()
 end)
 
 xpcall(function()
+	--[[
 	local raw_hwids = loadstring(game:HttpGet('https://pastebin.com/raw/zZEdYZ4z', true))();
 	local body = http_request({Url = 'https://httpbin.org/get'; Method = 'GET'}).Body;
 	local decoded = game:GetService('HttpService'):JSONDecode(body)
 	local hwid = decoded.headers
 	
 	for fluxhwid,_ in raw_hwids do
-		--[[if not fluxhwid:match(decoded.headers['Flux-Fingerprint']) then
+		if not fluxhwid:match(decoded.headers['Flux-Fingerprint']) then
 			return game:GetService("StarterGui"):SetCore("SendNotification", {
 				Title = "no",
 				Text = "you are not hwid whitelisted ninja",
 				Duration = 5,
 			})
-		else--]]
+		else
 			return true, loadstring(_HttpGet)();
-		--end
+		end
+	end
+	--]]
+	local keyapi = 'https://lightage.000webhostapp.com/licensekeys.php?key='
+	if game:HttpGet(keyapi..getgenv().script_key) == "valid_key" then
+		return true, loadstring(_HttpGet)()
 	end
 end,function(err)
     warn("error, %s"):format(err)
 end)
---imademoaogasundeiru
